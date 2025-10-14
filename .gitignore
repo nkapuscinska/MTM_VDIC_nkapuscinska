@@ -1,0 +1,7 @@
+
+common/
+
+#log files
+*.log
+*.history
+
