@@ -31,8 +31,6 @@ typedef enum {
     COLOR_DEFAULT
 } print_color_t;
 
-bit packets_ready = 0;
-bit config_sent = 0;
 
 uart_packet_t packet_q[$];
 
@@ -125,15 +123,18 @@ function uart_frame_t create_uart_frame(bit [7:0] data);
     return frame;
 endfunction
 
-
 function uart_packet_t create_functional_packet(bit [7:0] address);
     uart_packet_t packet;
     bit [7:0] data;
 
     data = $urandom_range(0, 255);
 
+    packet.adres_frame = create_uart_frame(address);
+    packet.data_frame  = create_uart_frame(data);
+
     return packet;
 endfunction
+
 
 function uart_packet_t create_uart_packet(bit [7:0] address);
     uart_packet_t packet;
@@ -164,43 +165,8 @@ task send_uart_packet(input uart_packet_t packet, output bit sin);
     send_uart_frame(packet.data_frame, sin);
 endtask
 
-initial begin
-    uart_packet_t pkt;
-    for (int i = 0; i < 256; i++) begin
-    
-        pkt = create_uart_packet(i);
-        packet_q.push_back(pkt);
-        address_map[i] = pkt.data_frame.data_bits;
-    end
-    packets_ready = 1;
-end
+task send_config_packets();
 
-initial begin
-    longint clk_counter;
-    clk_counter = 0;
-    forever begin
-        @(posedge clk) clk_counter++;
-        if(clk_counter % 1000 == 0) begin
-            $display("%0t Clock cycles elapsed: %0d", $time, clk_counter);
-        end
-    end
-end
-
-initial begin
-    wait (config_sent);
-    prog = 0;
-    $display("Switched to functional mode. Sending functional packets...");
-
-    for (int i = 0; i < 256; i++) begin
-        static uart_packet_t pkt;
-        pkt = create_functional_packet(i);
-        send_uart_packet(pkt, sin);
-    end
-end
-
-
-initial begin
-    wait (packets_ready);
     $display("Starting to send packets...");
 
     while (packet_q.size() > 0) begin
@@ -211,7 +177,49 @@ initial begin
     end
 
     $display("Queue is empty.");
-    config_sent = 1;
+endtask
+
+task generate_config_packets();
+    uart_packet_t pkt;
+    for (int i = 0; i < 256; i++) begin
+        pkt = create_uart_packet(i);
+        packet_q.push_back(pkt);
+        address_map[i] = pkt.data_frame.data_bits;
+    end
+endtask
+
+task monitor_clock();
+    static longint clk_counter = 0;
+    forever begin
+        @(posedge clk) clk_counter++;
+        if (clk_counter % 1000 == 0) begin
+            $display("%0t Clock cycles elapsed: %0d", $time, clk_counter);
+        end
+    end
+endtask
+
+task send_functional_packets();
+    prog = 0;
+    $display("Switched to functional mode. Sending functional packets...");
+
+    for (int i = 0; i < 256; i++) begin
+        static uart_packet_t pkt;
+        pkt = create_functional_packet(i);
+        send_uart_packet(pkt, sin);
+    end
+endtask
+
+initial begin
+    prog = 1;
+    fork
+        monitor_clock();
+    join_none
+
+    generate_config_packets();
+    send_config_packets();
+    send_functional_packets();
+
+    #1000;
     $display("Simulation finished.");
     $finish;
 end
