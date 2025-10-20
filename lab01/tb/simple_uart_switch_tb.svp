@@ -1,0 +1,220 @@
+module top;
+
+
+typedef enum bit {
+    TEST_PASSED,
+    TEST_FAILED
+} test_result_t;
+
+typedef struct packed {
+    bit        start_bit;
+    bit        [7:0]  data_bits;
+    bit        parity_bit;
+    bit        stop_bit;
+
+} uart_frame_t;
+
+
+typedef struct {
+    uart_frame_t    adres_frame;
+    uart_frame_t    data_frame;
+} uart_packet_t;
+
+
+
+typedef enum {
+    COLOR_BOLD_BLACK_ON_GREEN,
+    COLOR_BOLD_BLACK_ON_RED,                   
+    COLOR_BOLD_BLACK_ON_YELLOW,
+    COLOR_BOLD_BLUE_ON_WHITE,
+    COLOR_BLUE_ON_WHITE,
+    COLOR_DEFAULT
+} print_color_t;
+
+bit packets_ready = 0;
+bit config_sent = 0;
+
+uart_packet_t packet_q[$];
+
+bit [7:0] addr;
+typedef bit [7:0] addr_t;
+typedef bit [7:0] port_t;
+
+port_t temp;
+addr_t key;
+
+port_t address_map [bit [7:0]];
+//------------------------------------------------------------------------------
+// Local variables
+//------------------------------------------------------------------------------
+
+bit                  clk;
+bit                  rst_n;
+bit                  prog;
+bit                  sin;
+bit                 sout0;
+bit                 sout1;
+
+test_result_t        test_result = TEST_PASSED;
+
+
+//------------------------------------------------------------------------------
+// DUT instantiation
+//------------------------------------------------------------------------------
+
+simple_switch_uart DUT (
+
+    .clk, 
+    .rst_n, 
+    .prog, 
+    .sin, 
+    .sout0, 
+    .sout1
+    );
+
+
+//------------------------------------------------------------------------------
+// Clock generator
+//------------------------------------------------------------------------------
+
+initial begin : clk_gen_blk
+    clk = 0;
+    forever begin : clk_frv_blk
+        #10;
+        clk = ~clk;
+    end
+end
+
+initial begin
+    prog = 1;
+end
+
+
+     
+//------------------------------------------------------------------------------
+// Other functions
+//------------------------------------------------------------------------------
+
+// used to modify the color of the text printed on the terminal
+function void set_print_color ( print_color_t c );
+    string ctl;
+    case(c)
+        COLOR_BOLD_BLACK_ON_GREEN : ctl  = "\033\[1;30m\033\[102m";
+        COLOR_BOLD_BLACK_ON_RED : ctl    = "\033\[1;30m\033\[101m";
+        COLOR_BOLD_BLACK_ON_YELLOW : ctl = "\033\[1;30m\033\[103m";
+        COLOR_BOLD_BLUE_ON_WHITE : ctl   = "\033\[1;34m\033\[107m";
+        COLOR_BLUE_ON_WHITE : ctl        = "\033\[0;34m\033\[107m";
+        COLOR_DEFAULT : ctl              = "\033\[0m\n";
+        default : begin
+            $error("set_print_color: bad argument");
+            ctl                          = "";
+        end
+    endcase
+    $write(ctl);
+endfunction
+
+
+function uart_frame_t create_uart_frame(bit [7:0] data);
+    uart_frame_t frame;
+
+    frame.start_bit = 0;
+    frame.data_bits = data;
+    frame.parity_bit = ^data;
+    frame.stop_bit = 1;
+
+    return frame;
+endfunction
+
+
+function uart_packet_t create_functional_packet(bit [7:0] address);
+    uart_packet_t packet;
+    bit [7:0] data;
+
+    data = $urandom_range(0, 255);
+
+    return packet;
+endfunction
+
+function uart_packet_t create_uart_packet(bit [7:0] address);
+    uart_packet_t packet;
+    bit [7:0] port;
+
+    port = $urandom_range(0, 1);
+
+    packet.adres_frame = create_uart_frame(address);
+    packet.data_frame  = create_uart_frame(port);
+
+    return packet;
+endfunction
+
+task send_uart_frame(input uart_frame_t frame, output bit sin);
+    sin = frame.start_bit; #16;
+
+    for (int i = 0; i < 8; i++) begin
+        sin = frame.data_bits[i]; #16;
+    end
+
+    sin = frame.parity_bit; #16;
+    sin = frame.stop_bit;  #16;
+endtask
+
+
+task send_uart_packet(input uart_packet_t packet, output bit sin);
+    send_uart_frame(packet.adres_frame, sin);
+    send_uart_frame(packet.data_frame, sin);
+endtask
+
+initial begin
+    uart_packet_t pkt;
+    for (int i = 0; i < 256; i++) begin
+    
+        pkt = create_uart_packet(i);
+        packet_q.push_back(pkt);
+        address_map[i] = pkt.data_frame.data_bits;
+    end
+    packets_ready = 1;
+end
+
+initial begin
+    longint clk_counter;
+    clk_counter = 0;
+    forever begin
+        @(posedge clk) clk_counter++;
+        if(clk_counter % 1000 == 0) begin
+            $display("%0t Clock cycles elapsed: %0d", $time, clk_counter);
+        end
+    end
+end
+
+initial begin
+    wait (config_sent);
+    prog = 0;
+    $display("Switched to functional mode. Sending functional packets...");
+
+    for (int i = 0; i < 256; i++) begin
+        static uart_packet_t pkt;
+        pkt = create_functional_packet(i);
+        send_uart_packet(pkt, sin);
+    end
+end
+
+
+initial begin
+    wait (packets_ready);
+    $display("Starting to send packets...");
+
+    while (packet_q.size() > 0) begin
+        uart_packet_t pkt;
+        pkt = packet_q.pop_front();
+        $display("Address %0d is assigned to Port %0d", pkt.adres_frame.data_bits, pkt.data_frame.data_bits);
+        send_uart_packet(pkt, sin);
+    end
+
+    $display("Queue is empty.");
+    config_sent = 1;
+    $display("Simulation finished.");
+    $finish;
+end
+
+
+endmodule : top
