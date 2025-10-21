@@ -1,5 +1,0 @@
-1760454373 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/common/tinyalu/tinyalu.sv
-1760454373 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/common/tinyalu/tinyalu_pkg.sv
-1760454373 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab01example/tb/tinyalu_tb.sv
-1760454373 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/common/tinyalu/three_cycle.sv
-1760454373 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/common/tinyalu/single_cycle.sv
