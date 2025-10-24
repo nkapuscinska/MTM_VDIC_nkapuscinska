@@ -159,6 +159,11 @@ function uart_packet_t create_uart_packet(bit [7:0] address);
     return packet;
 endfunction
 
+     
+//------------------------------------------------------------------------------
+// Tasks
+//------------------------------------------------------------------------------
+
 task automatic send_uart_frame(
     input uart_frame_t frame, 
     ref bit sin,
@@ -398,7 +403,33 @@ begin
 end
 endtask
 
+     
+//------------------------------------------------------------------------------
+// Coverages
+//------------------------------------------------------------------------------
 
+
+
+// Covergroup checking the adressing
+    covergroup op_adres;
+
+        option.name = "cg_op_adres";
+
+        coverpoint op_address_sent {
+            // #A1 test all adresses
+            bins A1_all_addr[]     = ([0:255]);
+
+            // #A2 test if both ports are used
+            bins A2_all_ports[]      = ([0:1])
+
+        }
+
+    endgroup
+
+     
+//------------------------------------------------------------------------------
+// Simulation
+//------------------------------------------------------------------------------
 
 initial begin
     rst_n = 0;
@@ -414,6 +445,7 @@ initial begin
         monitor_clock();
         verify_output();
     join_none
+
 
     generate_config_packets();
     send_config_packets();
