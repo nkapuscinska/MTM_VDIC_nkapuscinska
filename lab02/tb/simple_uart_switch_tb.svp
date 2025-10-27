@@ -28,7 +28,9 @@ typedef struct {
     bit port;
 } uart_observed_t;
 
-
+bit [7:0] data;
+bit [7:0] op_address_sent;  
+bit       op_port_sent;     
 
 
 typedef enum {
@@ -45,7 +47,9 @@ uart_packet_t packet_q[$];
 uart_observed_t expected_data_q[$];
 uart_observed_t observed_q[$];
 
+bit [7:0] op_address;
 bit [7:0] addr;
+bit port;
 typedef bit [7:0] addr_t;
 typedef bit [7:0] port_t;
 
@@ -79,7 +83,7 @@ simple_switch_uart DUT (
     .sin, 
     .sout0, 
     .sout1
-    );
+);
 
 
 //------------------------------------------------------------------------------
@@ -93,6 +97,7 @@ initial begin : clk_gen_blk
         clk = ~clk;
     end
 end
+
 
 initial begin
     prog = 1;
@@ -240,10 +245,13 @@ task automatic send_functional_packets();
         pkt = create_functional_packet(i);
         send_uart_packet(pkt, sin);
 
-        exp.address = i;
-        exp.data    = pkt.data_frame.data_bits;
-        exp.port    = address_map[i];
-        expected_data_q.push_back(exp);
+        op_address_sent = i;
+        op_port_sent    = address_map[i];
+        data    = pkt.data_frame.data_bits;
+        expected_data_q.push_back(exp);    
+        adrr.sample();
+        dat.sample();
+        op.sample();                         
 
         $display("Sent packet: addr=%0d data=0x%0h expected_port=%0d",
                  exp.address, exp.data, exp.port);
@@ -299,7 +307,7 @@ task automatic verify_output();
     end
 endtask
 
-task automatic verify_data_integrity();
+task automatic scoreboard();
     int errors = 0;
     $display("Verifying data integrity... expected %0d frames", expected_data_q.size());
 
@@ -415,16 +423,74 @@ endtask
 
         option.name = "cg_op_adres";
 
-        coverpoint op_address_sent {
-            // #A1 test all adresses
-            bins A1_all_addr[]     = ([0:255]);
+            // Coverpoint dla adresów
+        coverpoint addr {
+            bins A1_all_addr[] = {[0:255]};
+        }
 
-            // #A2 test if both ports are used
-            bins A2_all_ports[]      = ([0:1])
+            // Coverpoint dla portów (osobny coverpoint!)
+        coverpoint port {
+            bins A2_all_ports[] = {[0:1]};
+        }
+
+
+    endgroup
+
+    // Covergroup checking the adressing
+    covergroup op_data;
+
+        option.name = "cg_op_data";
+
+        coverpoint data {
+            // #A1 test all adresses
+            bins A1_all_data[]     = ([0:255]);
 
         }
 
     endgroup
+
+    // Covergroup checking the adressing
+    covergroup op_options;
+
+        option.name = "cg_op_options";
+
+        coverpoint prog {
+            // #A1 test if programing mode was tested
+            bins A1_prog[]     = ([0:1]);
+        }
+        coverpoint rst_n {
+            // #A2 test if rst_n was triggered
+            bins A2_Reset_n[]      = ([0:1]);
+
+        }
+
+    endgroup
+
+op_adres      adrr;
+op_data         dat;
+op_options      op;
+
+initial begin : coverage
+    adrr      = new();
+    dat      = new();
+    op      = new();
+
+    forever begin : sample_cov
+        @(posedge clk);
+        adrr.sample();
+        dat.sample();
+        op.sample();
+
+        /* #1step delay is necessary before checking for the coverage
+         * as the .sample methods run in parallel threads
+          */
+        #1step;
+        if($get_coverage() == 100) break; //disable, if needed
+
+        // you can print the coverage after each sample
+//            $strobe("%0t coverage: %.4g\%",$time, $get_coverage());
+    end
+end : coverage
 
      
 //------------------------------------------------------------------------------
@@ -446,13 +512,12 @@ initial begin
         verify_output();
     join_none
 
-
     generate_config_packets();
     send_config_packets();
     prog = 0;
     send_functional_packets();
     #(CLKS_PER_BIT*12*256);
-    verify_data_integrity();
+    scoreboard();
 
     test_bad_parity();
     repeat (6*CLKS_PER_BIT) @(posedge clk);
