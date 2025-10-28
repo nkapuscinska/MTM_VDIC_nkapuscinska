@@ -28,9 +28,14 @@ typedef struct {
     bit port;
 } uart_observed_t;
 
+bit [7:0] addr;
 bit [7:0] data;
+bit [7:0] port;
+bit [7:0] addr_cov;
+bit [7:0] data_cov;
+bit [7:0] port_cov;
 bit [7:0] op_address_sent;  
-bit       op_port_sent;     
+bit       op_port_sent;  
 
 
 typedef enum {
@@ -47,9 +52,7 @@ uart_packet_t packet_q[$];
 uart_observed_t expected_data_q[$];
 uart_observed_t observed_q[$];
 
-bit [7:0] op_address;
-bit [7:0] addr;
-bit port;
+
 typedef bit [7:0] addr_t;
 typedef bit [7:0] port_t;
 
@@ -83,7 +86,7 @@ simple_switch_uart DUT (
     .sin, 
     .sout0, 
     .sout1
-);
+    );
 
 
 //------------------------------------------------------------------------------
@@ -97,7 +100,6 @@ initial begin : clk_gen_blk
         clk = ~clk;
     end
 end
-
 
 initial begin
     prog = 1;
@@ -163,11 +165,6 @@ function uart_packet_t create_uart_packet(bit [7:0] address);
 
     return packet;
 endfunction
-
-     
-//------------------------------------------------------------------------------
-// Tasks
-//------------------------------------------------------------------------------
 
 task automatic send_uart_frame(
     input uart_frame_t frame, 
@@ -245,13 +242,10 @@ task automatic send_functional_packets();
         pkt = create_functional_packet(i);
         send_uart_packet(pkt, sin);
 
-        op_address_sent = i;
-        op_port_sent    = address_map[i];
-        data    = pkt.data_frame.data_bits;
-        expected_data_q.push_back(exp);    
-        adrr.sample();
-        dat.sample();
-        op.sample();                         
+        exp.address = i;
+        exp.data    = pkt.data_frame.data_bits;
+        exp.port    = address_map[i];
+        expected_data_q.push_back(exp);
 
         $display("Sent packet: addr=%0d data=0x%0h expected_port=%0d",
                  exp.address, exp.data, exp.port);
@@ -411,7 +405,6 @@ begin
 end
 endtask
 
-     
 //------------------------------------------------------------------------------
 // Coverages
 //------------------------------------------------------------------------------
@@ -466,31 +459,23 @@ endtask
 
     endgroup
 
-op_adres      adrr;
-op_data         dat;
-op_options      op;
+op_adres      adrr_cov;
+op_data         dat_cov;
+op_options      op_cov;
 
-initial begin : coverage
-    adrr      = new();
-    dat      = new();
-    op      = new();
+// initial begin : coverage
+//     adrr_cov      = new();
+//     dat_cov      = new();
+//     op_cov      = new();
 
-    forever begin : sample_cov
-        @(posedge clk);
-        adrr.sample();
-        dat.sample();
-        op.sample();
+//     forever begin : sample_cov
+//         @(posedge clk);
+//         adrr_cov.sample();
+//         dat_cov.sample();
+//         op_cov.sample();
 
-        /* #1step delay is necessary before checking for the coverage
-         * as the .sample methods run in parallel threads
-          */
-        #1step;
-        if($get_coverage() == 100) break; //disable, if needed
-
-        // you can print the coverage after each sample
-//            $strobe("%0t coverage: %.4g\%",$time, $get_coverage());
-    end
-end : coverage
+//     end
+// end : coverage
 
      
 //------------------------------------------------------------------------------
