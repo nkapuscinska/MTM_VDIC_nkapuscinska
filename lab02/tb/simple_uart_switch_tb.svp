@@ -49,8 +49,10 @@ typedef enum {
 
 
 uart_packet_t packet_q[$];
+uart_packet_t coverage_packet_q[$];
 uart_observed_t expected_data_q[$];
 uart_observed_t observed_q[$];
+
 
 
 typedef bit [7:0] addr_t;
@@ -196,6 +198,7 @@ endtask
 
 
 task automatic send_uart_packet(input uart_packet_t packet, ref bit sin);
+    addr_cov = packet.adres_frame.data_bits;
     send_uart_frame(packet.adres_frame, sin);
     send_uart_frame(packet.data_frame, sin);
 endtask
@@ -241,11 +244,11 @@ task automatic send_functional_packets();
     for (int i = 0; i < 256; i++) begin
         pkt = create_functional_packet(i);
         send_uart_packet(pkt, sin);
-
         exp.address = i;
         exp.data    = pkt.data_frame.data_bits;
         exp.port    = address_map[i];
         expected_data_q.push_back(exp);
+
 
         $display("Sent packet: addr=%0d data=0x%0h expected_port=%0d",
                  exp.address, exp.data, exp.port);
@@ -416,13 +419,11 @@ endtask
 
         option.name = "cg_op_adres";
 
-            // Coverpoint dla adresów
-        coverpoint addr {
+        coverpoint addr_cov {
             bins A1_all_addr[] = {[0:255]};
         }
 
-            // Coverpoint dla portów (osobny coverpoint!)
-        coverpoint port {
+        coverpoint port_cov {
             bins A2_all_ports[] = {[0:1]};
         }
 
@@ -463,19 +464,19 @@ op_adres      adrr_cov;
 op_data         dat_cov;
 op_options      op_cov;
 
-// initial begin : coverage
-//     adrr_cov      = new();
+initial begin : coverage
+    adrr_cov      = new();
 //     dat_cov      = new();
 //     op_cov      = new();
 
-//     forever begin : sample_cov
-//         @(posedge clk);
-//         adrr_cov.sample();
+    forever begin : sample_cov
+        @(posedge clk);
+        adrr_cov.sample();
 //         dat_cov.sample();
 //         op_cov.sample();
 
-//     end
-// end : coverage
+    end
+end : coverage
 
      
 //------------------------------------------------------------------------------
@@ -495,6 +496,7 @@ initial begin
     fork
         monitor_clock();
         verify_output();
+
     join_none
 
     generate_config_packets();
