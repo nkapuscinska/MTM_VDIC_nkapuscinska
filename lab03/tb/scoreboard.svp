@@ -1,0 +1,51 @@
+`timescale 1ns/1ps
+import fifomult_tb_pkg::*;
+
+module scoreboard ();
+
+    task automatic scoreboard();
+        int errors = 0;
+        $display("Verifying data integrity... expected %0d frames", fifomult_tb_pkg::expected_data_q.size());
+
+        for (int i = 0; i < fifomult_tb_pkg::expected_data_q.size(); i++) begin
+            uart_observed_t exp = fifomult_tb_pkg::expected_data_q[i];
+            uart_observed_t obs;
+            bit found = 0;
+            for (int j = 0; j < fifomult_tb_pkg::observed_q.size(); j++) begin
+                obs = fifomult_tb_pkg::observed_q[j];
+                if (obs.address === exp.address) begin
+                    found = 1;
+                    if (obs.data === exp.data && obs.port === exp.port) begin
+                        fifomult_tb_pkg::set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
+                        $display("Address %0d → PASS (expected port %0d, actual port %0d, data=0x%0h)",
+                                 exp.address, exp.port, obs.port, obs.data);
+                    end else begin
+                        fifomult_tb_pkg::set_print_color(COLOR_BOLD_BLACK_ON_RED);
+                        $display("Address %0d → FAIL (expected port %0d, actual port %0d, expected data=0x%0h, actual data=0x%0h)",
+                                 exp.address, exp.port, obs.port, exp.data, obs.data);
+                        errors++;
+                    end
+                    fifomult_tb_pkg::set_print_color(COLOR_DEFAULT);
+                    break;
+                end
+            end
+
+            if (!found) begin
+                fifomult_tb_pkg::set_print_color(COLOR_BOLD_BLACK_ON_RED);
+                $display("Address %0d → FAIL (frame not received!)", exp.address);
+                fifomult_tb_pkg::set_print_color(COLOR_DEFAULT);
+                errors++;
+            end
+        end
+
+        if (errors == 0) begin
+            fifomult_tb_pkg::set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
+            $display("DATA INTEGRITY TEST: PASS");
+        end else begin
+            fifomult_tb_pkg::set_print_color(COLOR_BOLD_BLACK_ON_RED);
+            $display("DATA INTEGRITY TEST: FAIL (%0d errors)", errors);
+        end
+        fifomult_tb_pkg::set_print_color(COLOR_DEFAULT);
+    endtask
+
+endmodule : scoreboard

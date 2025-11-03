@@ -1,0 +1,133 @@
+`timescale 1ns/1ps
+import fifomult_tb_pkg::*;
+
+module driver (
+    input  bit clk,
+    output reg sin
+);
+
+    // ---------- frame creation ----------
+    function uart_frame_t create_uart_frame(bit [7:0] data);
+        uart_frame_t frame;
+        frame.start_bit  = 0;
+        frame.data_bits  = data;
+        frame.parity_bit = ^data;
+        frame.stop_bit   = 1;
+        return frame;
+    endfunction
+
+    function uart_packet_t create_functional_packet(bit [7:0] address);
+        uart_packet_t packet;
+        bit [7:0] local_data;
+        local_data = $urandom_range(0,255);
+        packet.adres_frame = create_uart_frame(address);
+        packet.data_frame  = create_uart_frame(local_data);
+        return packet;
+    endfunction
+
+    function uart_packet_t create_uart_packet(bit [7:0] address);
+        uart_packet_t packet;
+        bit [7:0] local_port;
+        local_port = $urandom_range(0,1);
+        packet.adres_frame = create_uart_frame(address);
+        packet.data_frame  = create_uart_frame(local_port);
+        return packet;
+    endfunction
+
+    // ---------- send primitive ----------
+    task automatic send_uart_frame(
+        input uart_frame_t frame,
+        input bit force_parity_error = 0
+    );
+        bit parity_bit_to_send;
+
+        sin = frame.start_bit;
+        repeat (CLKS_PER_BIT) @(posedge clk);
+
+        for (int i = 0; i < 8; i++) begin
+            sin = frame.data_bits[i];
+            repeat (CLKS_PER_BIT) @(posedge clk);
+        end
+
+        if (force_parity_error)
+            parity_bit_to_send = ~frame.parity_bit;
+        else
+            parity_bit_to_send = frame.parity_bit;
+
+        sin = parity_bit_to_send;
+        repeat (CLKS_PER_BIT) @(posedge clk);
+
+        sin = frame.stop_bit;
+        repeat (CLKS_PER_BIT) @(posedge clk);
+    endtask
+
+    // ---------- send packet (updates pack-level coverage mirrors) ----------
+    // task automatic send_uart_packet(input uart_packet_t packet);
+    //     // update package coverage mirrors
+    //     fifomult_tb_pkg::addr_cov = packet.adres_frame.data_bits;
+    //     fifomult_tb_pkg::data_cov = packet.data_frame.data_bits;
+    //     fifomult_tb_pkg::port_cov = packet.data_frame.data_bits;
+    //     send_uart_frame(packet.adres_frame, 0);
+    //     send_uart_frame(packet.data_frame, 0);
+    // endtask
+
+    // ---------- generate and send config packets ----------
+    task automatic generate_config_packets();
+        uart_packet_t pkt;
+        for (int i = 0; i < 256; i++) begin
+            pkt = create_uart_packet(i);
+            // push into package queue (shared)
+            fifomult_tb_pkg::packet_q.push_back(pkt);
+            // update package address map
+            fifomult_tb_pkg::address_map[i] = pkt.data_frame.data_bits;
+        end
+    endtask
+
+    task automatic send_config_packets();
+        $display("Starting to send packets...");
+        while (fifomult_tb_pkg::packet_q.size() > 0) begin
+            uart_packet_t pkt;
+            pkt = fifomult_tb_pkg::packet_q.pop_front();
+            // update coverage mirrors
+            fifomult_tb_pkg::addr_cov = pkt.adres_frame.data_bits;
+            fifomult_tb_pkg::data_cov = pkt.data_frame.data_bits;
+            fifomult_tb_pkg::port_cov = pkt.data_frame.data_bits;
+            // send
+            send_uart_frame(pkt.adres_frame, 0);
+            send_uart_frame(pkt.data_frame, 0);
+        end
+        $display("Queue is empty.");
+    endtask
+
+    // ---------- functional packets ----------
+    task automatic send_functional_packets();
+        uart_observed_t exp;
+        uart_packet_t pkt;
+
+        $display("Switched to functional mode. Sending functional packets...");
+
+        for (int i = 0; i < 256; i++) begin
+            fifomult_tb_pkg::addr_cov = pkt.adres_frame.data_bits;
+            fifomult_tb_pkg::data_cov = pkt.data_frame.data_bits;
+            fifomult_tb_pkg::port_cov = pkt.data_frame.data_bits;
+
+            pkt = create_functional_packet(i);
+            send_uart_frame(pkt.adres_frame, 0);
+            send_uart_frame(pkt.data_frame, 0);
+            exp.address = i;
+            exp.data    = pkt.data_frame.data_bits;
+            exp.port    = fifomult_tb_pkg::address_map[i];
+            // push into shared expected queue
+            fifomult_tb_pkg::expected_data_q.push_back(exp);
+
+            $display("Sent packet: addr=%0d data=0x%0h expected_port=%0d",
+                     exp.address, exp.data, exp.port);
+        end
+    endtask
+
+    // ---------- parity helper ----------
+    task automatic send_uart_frame_with_bad_parity(input uart_frame_t frame);
+        send_uart_frame(frame, 1);
+    endtask
+
+endmodule : driver
