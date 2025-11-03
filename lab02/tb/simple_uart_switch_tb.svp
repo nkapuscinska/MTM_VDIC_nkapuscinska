@@ -34,6 +34,7 @@ bit [7:0] port;
 bit [7:0] addr_cov;
 bit [7:0] data_cov;
 bit [7:0] port_cov;
+bit [7:0] rst_n_cov;
 bit [7:0] op_address_sent;  
 bit       op_port_sent;  
 
@@ -199,6 +200,8 @@ endtask
 
 task automatic send_uart_packet(input uart_packet_t packet, ref bit sin);
     addr_cov = packet.adres_frame.data_bits;
+    data_cov = packet.data_frame.data_bits;
+    port_cov = packet.data_frame.data_bits;
     send_uart_frame(packet.adres_frame, sin);
     send_uart_frame(packet.data_frame, sin);
 endtask
@@ -257,7 +260,7 @@ endtask
 
 
 
-task automatic verify_output();
+task automatic monitor();
     uart_observed_t obs;
     static bit [7:0] shift_reg = 0;
     static bit [3:0] bit_index = 0;
@@ -420,24 +423,23 @@ endtask
         option.name = "cg_op_adres";
 
         coverpoint addr_cov {
-            bins A1_all_addr[] = {[0:255]};
+            bins A1_all_addr[] = {[0:255]} iff (prog == 1);
         }
 
         coverpoint port_cov {
-            bins A2_all_ports[] = {[0:1]};
+            bins A2_all_ports[] = {[0:1]} iff (prog == 1);
         }
 
 
     endgroup
 
-    // Covergroup checking the adressing
     covergroup op_data;
 
         option.name = "cg_op_data";
 
-        coverpoint data {
+        coverpoint data_cov {
             // #A1 test all adresses
-            bins A1_all_data[]     = ([0:255]);
+            bins A1_all_data[]     = {[0:255]} iff (prog == 0);
 
         }
 
@@ -450,11 +452,11 @@ endtask
 
         coverpoint prog {
             // #A1 test if programing mode was tested
-            bins A1_prog[]     = ([0:1]);
+            bins A1_prog[]     = {[0:1]};
         }
         coverpoint rst_n {
             // #A2 test if rst_n was triggered
-            bins A2_Reset_n[]      = ([0:1]);
+            bins A2_Reset_n[]      = {[0:1]};
 
         }
 
@@ -466,14 +468,14 @@ op_options      op_cov;
 
 initial begin : coverage
     adrr_cov      = new();
-//     dat_cov      = new();
-//     op_cov      = new();
+    dat_cov      = new();
+    op_cov      = new();
 
     forever begin : sample_cov
         @(posedge clk);
         adrr_cov.sample();
-//         dat_cov.sample();
-//         op_cov.sample();
+        dat_cov.sample();
+        op_cov.sample();
 
     end
 end : coverage
@@ -495,7 +497,7 @@ initial begin
 
     fork
         monitor_clock();
-        verify_output();
+        monitor();
 
     join_none
 
