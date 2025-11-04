@@ -27,13 +27,28 @@ module top;
     );
 
     // instantiate modules
-    driver     driver_inst (.clk(clk),  .sin(sin));
-    monitor    monitor_inst(.clk(clk),  .sout0(sout0), .sout1(sout1));
+    driver     driver_inst (
+        .clk(clk),  
+        .sin(sin)
+        );
+    monitor    monitor_inst(
+        .clk(clk),  
+        .sout0(sout0), 
+        .sout1(sout1)
+        );
     scoreboard scoreboard_inst();
-    coverage   coverage_inst(.clk(clk), .prog(prog), .rst_n(rst_n));
-    tp_gen     tpgen_inst(.clk(clk), .rst_n(rst_n), .sout0(sout0), .sout1(sout1), .dummy());
+    coverage   coverage_inst(
+        .clk(clk), 
+        .prog(prog), 
+        .rst_n(rst_n)
+        );
+    tbgen     tbgen_inst(
+        .clk(clk), 
+        .rst_n(rst_n), 
+        .sout0(sout0), 
+        .sout1(sout1), 
+        .dummy());
 
-    // Clock generator (same as original)
     initial begin : clk_gen_blk
         clk = 0;
         forever begin : clk_frv_blk
@@ -53,16 +68,14 @@ module top;
         rst_n = 1;
     end
 
-    // Main sequence (keeps same ordering and calls same tasks, but using instances)
     initial begin
         prog = 1;
 
         fork
-            tpgen_inst.monitor_clock();
+            monitor_inst.monitor_clock();
             monitor_inst.monitor();
         join_none
 
-        // call generate_config_packets from driver instance
         driver_inst.generate_config_packets();
         driver_inst.send_config_packets();
 
@@ -72,11 +85,8 @@ module top;
 
         #(CLKS_PER_BIT*12*256);
 
-        // scoreboard
         scoreboard_inst.scoreboard();
 
-        // test bad parity: original called create_uart_packet, send_uart_frame_with_bad_parity directly.
-        // Here we reproduce same behavior through driver_inst.
         begin : bad_parity_block
             uart_packet_t pkt;
             int obs_size_before;
@@ -109,7 +119,6 @@ module top;
 
         repeat (6*CLKS_PER_BIT) @(posedge clk);
 
-        // test_reset (exactly same flow as original)
         begin : reset_block
             $display("=== Testing DUT reset ===");
             rst_n = 0;

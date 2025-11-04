@@ -120,8 +120,8 @@ module driver (
             // push into shared expected queue
             fifomult_tb_pkg::expected_data_q.push_back(exp);
 
-            $display("Sent packet: addr=%0d data=0x%0h expected_port=%0d",
-                     exp.address, exp.data, exp.port);
+            // $display("Sent packet: addr=%0d data=0x%0h expected_port=%0d",
+                    //  exp.address, exp.data, exp.port);
         end
     endtask
 

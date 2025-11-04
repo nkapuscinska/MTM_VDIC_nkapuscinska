@@ -14,7 +14,7 @@ UVM_PLI
 ../tb/monitor.svp
 ../tb/scoreboard.svp
 ../tb/coverage.svp
-../tb/tp_gen.svp
+../tb/tbgen.svp
 ../tb/../../common/simple_uart_switch.svp
 ../tb/top.svp
 -NOWARN

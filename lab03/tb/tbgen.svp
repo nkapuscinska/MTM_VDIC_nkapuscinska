@@ -1,0 +1,47 @@
+`timescale 1ns/1ps
+import fifomult_tb_pkg::*;
+
+module tbgen (
+    input bit clk,
+    input bit rst_n,
+    input bit sout0,
+    input bit sout1,
+    output bit dummy
+);
+
+
+
+    task automatic test_bad_parity();
+        uart_packet_t pkt;
+        int obs_size_before;
+
+        $display("=== Starting BAD PARITY test ===");
+
+        for (int i = 0; i < 5; i++) begin
+            bit [7:0] random_parity_addr;
+            random_parity_addr = $urandom_range(0, 255);
+            pkt = create_pkt_local(random_parity_addr);
+
+            obs_size_before = fifomult_tb_pkg::observed_q.size();
+
+            
+            #1; 
+        end
+    endtask
+
+    function uart_packet_t create_pkt_local(bit [7:0] address);
+        uart_packet_t packet;
+        bit [7:0] local_port;
+        local_port = $urandom_range(0,1);
+        packet.adres_frame = {1'b0, address, ^address, 1'b1}; 
+        return packet;
+    endfunction
+
+    
+    task automatic test_reset();
+        $display("=== Testing DUT reset ===");
+        
+        #1; 
+    endtask
+
+endmodule : tbgen
