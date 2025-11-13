@@ -10,11 +10,11 @@
 -define
 UVM_PLI
 ../tb/fifomult_tb_pkg.svp
-../tb/driver.svp
+../tb/switch_bfm.svp
 ../tb/monitor.svp
 ../tb/scoreboard.svp
 ../tb/coverage.svp
-../tb/tbgen.svp
+../tb/tp_gen.svp
 ../tb/../../common/simple_uart_switch.svp
 ../tb/top.svp
 -NOWARN

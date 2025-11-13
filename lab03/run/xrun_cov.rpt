@@ -1,29 +1,9 @@
 *I,imc.tool.cov.version.diff: "There is a difference between the IMC tool version 24.03 and the coverage version 24.09-s005"
-*I,RUNLD: Successfully loaded run /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab03/run/cov_work/scope/lab02_example.
-*I,MERGL1: Merging Simulation Coverage ...
-----------------------------
-*I,MERGL1: Preparing target model ...
-*I,MERGL1: Reading model of primary run (cov_work/scope/lab02_example) as initial model: cov_work/scope/icc_04b32666_5b1efe85.ucm
-*I,MERGL1: Target model generated successfully.
-*I,MERGL1: Projecting Simulation ucd data into the target model ...
-*I,MERGL2:   cov_work/scope/lab02_example:
-*I,MERGL3:       Data is projected in to the target model.
-*I,MERGL1: Writing output database cov_work/scope/merged_results:
-*I,MERGL2:   Model: cov_work/scope/merged_results/icc_04b32666_5b1efe85.ucm
-*I,MERGL2:   Data : cov_work/scope/merged_results/icc_04b32666_5b1efe85.ucd
-*I,MERGL1: No Specman coverage databases found in the runs.
-Total conflicts during target model creation: 0
-Total items not merged                      : 0
-Total runs not considered during target model creation: 0
-Total runs not merged                                 : 0
-*I,imc.tool.cov.version.diff: "There is a difference between the IMC tool version 24.03 and the coverage version 24.09-s005"
-*I,RUNLD: Successfully loaded run /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab03/run/cov_work/scope/merged_results.
-*W,REPDEP: This is a legacy report and no future enhancement is planned for this report. It is recommended that you use the 'report_metrics' command and generate a dynamic report.
-name                                     Overall Average      Overall Covered      Code Average         Code Covered         Fsm Average          Fsm Covered          Functional Average   Functional Covered   
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-top                                      91.67%               87.50% (7/8)         91.67%               87.50% (7/8)         n/a                  n/a                  n/a                  n/a                  
-|--DUT                                   83.33%               83.33% (5/6)         83.33%               83.33% (5/6)         n/a                  n/a                  n/a                  n/a                  
-|--tb_ctrl                               91.67%               93.33% (14/15)       91.67%               93.33% (14/15)       n/a                  n/a                  n/a                  n/a                  
-| |--bfm_inst                            87.47%               93.02% (80/86)       87.47%               93.02% (80/86)       n/a                  n/a                  n/a                  n/a                  
-| |--sb_inst                             58.27%               57.58% (19/33)       58.27%               57.58% (19/33)       n/a                  n/a                  n/a                  n/a                  
-|--cov_inst                              47.78%               2.55% (14/550)       53.70%               21.88% (7/32)        n/a                  n/a                  41.86%               1.35% (7/518)        
+*E,DRNTFND: Directory 'cov_work/scope/lab02_example' not found. Verify the existence of the specified directory, and rerun the command
+Starting batch mode
+imc> 
+imc> 
+imc> 
+imc> 
+imc> 
+imc> 

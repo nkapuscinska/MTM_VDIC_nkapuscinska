@@ -1,92 +1,67 @@
-`timescale 1ns/1ps
 package fifomult_tb_pkg;
+localparam int unsigned CLKS_PER_BIT = 16;
 
-  // shared parameter (exactly as original)
-  localparam int unsigned CLKS_PER_BIT = 16;
 
-  // types
-  typedef enum bit {
-      TEST_PASSED,
-      TEST_FAILED
-  } test_result_t;
+typedef enum bit {
+    TEST_PASSED,
+    TEST_FAILED
+} test_result_t;
 
-  typedef struct packed {
-      bit        start_bit;
-      bit [7:0]  data_bits;
-      bit        parity_bit;
-      bit        stop_bit;
-  } uart_frame_t;
+typedef struct packed {
+    bit        start_bit;
+    bit        [7:0]  data_bits;
+    bit        parity_bit;
+    bit        stop_bit;
 
-  typedef struct {
-      uart_frame_t adres_frame;
-      uart_frame_t data_frame;
-  } uart_packet_t;
+} uart_frame_t;
 
-  typedef struct {
-      bit [7:0] address;
-      bit [7:0] data;
-      bit port;
-  } uart_observed_t;
 
-  typedef enum {
-      COLOR_BOLD_BLACK_ON_GREEN,
-      COLOR_BOLD_BLACK_ON_RED,
-      COLOR_BOLD_BLACK_ON_YELLOW,
-      COLOR_BOLD_BLUE_ON_WHITE,
-      COLOR_BLUE_ON_WHITE,
-      COLOR_DEFAULT
-  } print_color_t;
+typedef struct {
+    uart_frame_t    adres_frame;
+    uart_frame_t    data_frame;
+} uart_packet_t;
 
-  typedef bit [7:0] addr_t;
-  typedef bit [7:0] port_t;
+typedef struct {
+    bit [7:0] address;
+    bit [7:0] data;
+    bit port;
+} uart_observed_t;
 
-  // -----------------------
-  // Shared variables (moved from top to package so all modules see same queues)
-  // -----------------------
-  // queues
-  uart_packet_t       packet_q[$];
-  uart_packet_t       coverage_packet_q[$];
-  uart_observed_t     expected_data_q[$];
-  uart_observed_t     observed_q[$];
+bit [7:0] addr;
+bit [7:0] data;
+bit [7:0] port;
+bit [7:0] addr_cov;
+bit [7:0] data_cov;
+bit [7:0] port_cov;
+bit [7:0] rst_n_cov;
+bit [7:0] op_address_sent;  
+bit       op_port_sent;  
 
-  // coverage mirrors and other small state (kept names same as original)
-  bit [7:0] addr_cov;
-  bit [7:0] data_cov;
-  bit [7:0] port_cov;
-  bit [7:0] rst_n_cov;
-  bit [7:0] op_address_sent;
-  bit       op_port_sent;
 
-  // address map (0..255)
-  bit [7:0] address_map [0:255];
+typedef enum {
+    COLOR_BOLD_BLACK_ON_GREEN,
+    COLOR_BOLD_BLACK_ON_RED,                   
+    COLOR_BOLD_BLACK_ON_YELLOW,
+    COLOR_BOLD_BLUE_ON_WHITE,
+    COLOR_BLUE_ON_WHITE,
+    COLOR_DEFAULT
+} print_color_t;
 
-  // other shared variables (kept to avoid changing original behavior)
-  bit [7:0] addr;
-  bit [7:0] data;
-  bit [7:0] port;
 
-  port_t temp;
-  addr_t key;
 
-  // test result shared
-  test_result_t test_result = TEST_PASSED;
+typedef bit [7:0] addr_t;
+typedef bit [7:0] port_t;
 
-  // helper: set_print_color (moved from original top)
-  function void set_print_color ( print_color_t c );
-      string ctl;
-      case(c)
-          COLOR_BOLD_BLACK_ON_GREEN : ctl  = "\033[1;30m\033[102m";
-          COLOR_BOLD_BLACK_ON_RED   : ctl  = "\033[1;30m\033[101m";
-          COLOR_BOLD_BLACK_ON_YELLOW: ctl  = "\033[1;30m\033[103m";
-          COLOR_BOLD_BLUE_ON_WHITE  : ctl  = "\033[1;34m\033[107m";
-          COLOR_BLUE_ON_WHITE       : ctl  = "\033[0;34m\033[107m";
-          COLOR_DEFAULT             : ctl  = "\033[0m\n";
-          default : begin
-              $error("set_print_color: bad argument");
-              ctl = "";
-          end
-      endcase
-      $write(ctl);
-  endfunction
+port_t temp;
+addr_t key;
+
+port_t address_map [bit [7:0]];
+//------------------------------------------------------------------------------
+// Local variables
+//------------------------------------------------------------------------------
+
+
+test_result_t        test_result = TEST_PASSED;
+
 
 endpackage : fifomult_tb_pkg
