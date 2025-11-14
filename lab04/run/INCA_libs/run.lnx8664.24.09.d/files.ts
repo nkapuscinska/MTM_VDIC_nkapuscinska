@@ -1,9 +1,5 @@
 1750968485 /home/student/nkapuscinska/cds.lib
-1762990927 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab03/tb/fifomult_tb_pkg.svp
-1762993238 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab03/tb/switch_bfm.svp
-1762991041 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab03/tb/monitor.svp
-1762993547 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab03/tb/scoreboard.svp
-1762990337 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab03/tb/coverage.svp
-1762993275 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab03/tb/tp_gen.svp
 1760455770 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/common/simple_uart_switch.svp
-1762989858 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab03/tb/top.svp
+1763100524 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab04/tb/fifomult_tb_pkg.svh
+1763096461 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab04/tb/switch_bfm.svp
+1763100729 /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab04/tb/top.svp
