@@ -1,17 +1,10 @@
- //`define DEBUG
+//`define DEBUG
 
-// ================================================================
-// ============ ABS FUNC =========================================
-// ================================================================
 function real abs_func(input real x);
     return (x < 0) ? -x : x;
 endfunction
 
 
-
-// ================================================================
-// ============ ABSTRACT BASE CLASS ===============================
-// ================================================================
 class shape_c;
     string name;
     real points[$][2];
@@ -33,21 +26,6 @@ class shape_c;
         $display("Area is: %0.2f", get_area());
         $display("--------------------------------------------------------------------------------");
     endfunction
-
-endclass
-
-
-
-// ================================================================
-// ============ RECTANGLE =========================================
-// ================================================================
-class rectangle_c extends polygon_c;
-
-    function new(string name, real points[4][2]);
-        super.new(name, points);
-    endfunction
-
-    
 
 endclass
 
@@ -74,12 +52,17 @@ class polygon_c extends shape_c;
     endfunction
 endclass
 
+class rectangle_c extends polygon_c;
+
+    function new(string name, real points[4][2]);
+        super.new(name, points);
+    endfunction
+endclass
+
 class triangle_c extends polygon_c;
 
     function new(string name, real points[3][2]);
         super.new(name, points);
-    endfunction
-
     endfunction
 endclass
 
@@ -141,10 +124,6 @@ class shape_reporter #(type T = shape_c);
 endclass
 
 
-
-// ================================================================
-// ============ SHAPE FACTORY =====================================
-// ================================================================
 class shape_factory;
 
     static function shape_c make_shape(real pts[$][2]);
@@ -176,13 +155,9 @@ class shape_factory;
                 obj = p;
             end
         endcase
-
-        //shape_reporter#()::push_shape(obj);
         return obj;
     endfunction
 
-
-    // rectangle detection (simplified)
     static function bit is_rectangle(real p[$][2]);
         real dx, dy;
         dx = abs_func(p[1][0] - p[0][0]);
@@ -196,11 +171,6 @@ class shape_factory;
 
 endclass
 
-
-
-// ================================================================
-// ============ TOP MODULE ========================================
-// ================================================================
 module top;
     int fd;
     string line;
@@ -238,12 +208,10 @@ module top;
 
             s = sf.make_shape(pts);
             sr.push_shape(s);
-            sr.report_shapes();
             
-
-
         end
-
+            
+            sr.report_shapes();
         $fclose(fd);
 
         
@@ -256,22 +224,15 @@ module top;
         string token;
 
         values.delete();
-        //$display("Parsing line: '%s'", line);
-        // Scan for floating point numbers
             begin
                 automatic string num_str;
                 for (int i = 0; i < line.len(); i++) begin
-                    // Skip whitespace
                     while (i < line.len() && (line[i] inside {" ", "\t", "\n", "\r"})) begin
                         i++;
                     end
-
                     if (i >= line.len()) break;
-
-                    // Extract number
                     num_str = "";
 
-                    // Read the number (including sign and decimal point)
                     while (i < line.len() && (line[i] inside {"-", "."} || line[i] inside {["0" : "9"]})) begin
                         num_str = {num_str, line[i]};
                         i++;
@@ -281,11 +242,9 @@ module top;
                         values.push_back(num_str.atoreal());
                     end
 
-                    i--; // Adjust for loop increment
+                    i--;
                 end
             end
-
-            //$display("Remaining line: '%s'", line);
     endfunction
 
 endmodule
