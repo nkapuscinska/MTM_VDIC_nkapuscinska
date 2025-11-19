@@ -21,6 +21,7 @@
 #------------------------------------------------------------------------------
 # The list of tests; in GUI mode only the first test is started.
 TESTS=(funct_test random_test bad_parity_test);
+# TESTS=(funct_test);
 #------------------------------------------------------------------------------
 # Default .f file
 FFILE="../tb/tb.f"

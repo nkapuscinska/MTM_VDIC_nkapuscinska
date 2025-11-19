@@ -13,13 +13,10 @@ class funct_tpgen extends base_tpgen;
         
         packet = create_functional_packet(i);
         //send_uart_packet(packet, bfm.sin);
-        
         exp.address = i;
-        exp.data    = packet.data_frame;
+        exp.data    = packet.data_frame.data_bits;
         exp.port    = address_map[i];
         bfm.expected_data_q.push_back(exp);
-        $display("Sent packet: addr=%0d data=0x%0h",
-        packet.adres_frame, packet.data_frame);
         i = (i == 255) ? 0 : i + 1;
 
         return packet;

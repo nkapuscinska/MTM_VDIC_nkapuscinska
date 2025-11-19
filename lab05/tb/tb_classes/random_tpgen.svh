@@ -35,6 +35,21 @@ class random_tpgen extends funct_tpgen;
 // functions and tasks
 //------------------------------------------------------------------------------
    
+    function automatic uart_packet_t send_functional_packets();
+        static byte unsigned i = 0;
+        uart_packet_t packet;
+        uart_observed_t exp;
+        
+        packet = create_random_functional_packet();
+        //send_uart_packet(packet, bfm.sin);
+        exp.address = i;
+        exp.data    = packet.data_frame.data_bits;
+        exp.port    = address_map[i];
+        bfm.expected_data_q.push_back(exp);
+        i = (i == 255) ? 0 : i + 1;
+
+        return packet;
+    endfunction
 
     function uart_packet_t create_random_functional_packet();
         uart_packet_t funct_packet;
@@ -43,7 +58,6 @@ class random_tpgen extends funct_tpgen;
 
         data = $urandom_range(0, 255);
         address = $urandom_range(0, 255);
-        $display("Creating random functional packet with address: %0h and data: %0h", address, data);
         
 
         funct_packet.adres_frame = create_uart_frame(address);
@@ -55,7 +69,7 @@ class random_tpgen extends funct_tpgen;
 
     protected function uart_packet_t get_packet();
         uart_packet_t packet;
-        packet = create_random_functional_packet();
+        packet = send_functional_packets();
         return packet;
     endfunction : get_packet
 

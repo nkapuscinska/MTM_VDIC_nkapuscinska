@@ -71,9 +71,6 @@ virtual class base_tpgen extends uvm_component;
 
         funct_packet.adres_frame = create_uart_frame(address);
         funct_packet.data_frame  = create_uart_frame(data);
-        $display("created functional packet: addr=%0d data=0x%0h",
-            address,
-            data);
 
         return funct_packet;
     endfunction
@@ -97,9 +94,9 @@ virtual class base_tpgen extends uvm_component;
         addr_cov = packet.adres_frame.data_bits;
         data_cov = packet.data_frame.data_bits;
         port_cov = packet.data_frame.data_bits;
-        $display("Sending UART packet: addr=%0d data=0x%0h",
-            packet.adres_frame.data_bits,
-            packet.data_frame.data_bits);
+        // $display("Sending UART packet: addr=%0h data=0x%0h",
+        //     packet.adres_frame.data_bits,
+        //     packet.data_frame.data_bits);
         bfm.send_uart_frame(packet.adres_frame, input_sin);
         bfm.send_uart_frame(packet.data_frame, input_sin);
 
@@ -153,9 +150,11 @@ virtual class base_tpgen extends uvm_component;
         send_config_packets();
         bfm.prog = 0;
 
-        repeat (8) begin : random_loop
+        repeat (1000) begin : random_loop
+            repeat (CLKS_PER_BIT) @(posedge bfm.clk);
             packet = get_packet();
             send_uart_packet(packet, bfm.sin);
+
         end : random_loop
         -> bfm.ev_end_of_test;
 

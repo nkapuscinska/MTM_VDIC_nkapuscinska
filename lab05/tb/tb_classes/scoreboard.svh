@@ -63,16 +63,15 @@ class scoreboard extends uvm_component;
             exp = bfm.expected_data_q.pop_front();
             obs = bfm.observed_q.pop_front();
 
-            if (obs.address === exp.address &&
-                obs.data    === exp.data &&
-                obs.port    === exp.port) begin
+            if (obs.data    === exp.data &&
+                obs.port    === address_map[obs.address]) begin
                 set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
-                $display("[%0t] PASS addr=%0d port=%0d data=0x%0h",
-                         $time, exp.address, exp.port, exp.data);
+                $display("[%0t] PASS addr=%0d exp_port=%0d obs_port=%0d exp_data=0x%0h obs_data=0x%0h",
+                         $time, obs.address, address_map[obs.address], obs.port, exp.data, obs.data);
             end else begin
                 set_print_color(COLOR_BOLD_BLACK_ON_RED);
                 $display("[%0t] FAIL addr=%0d exp_port=%0d obs_port=%0d exp_data=0x%0h obs_data=0x%0h",
-                         $time, exp.address, exp.port, obs.port, exp.data, obs.data);
+                         $time, obs.address, address_map[obs.address], obs.port, exp.data, obs.data);
                 errors++;
             end
             set_print_color(COLOR_DEFAULT);

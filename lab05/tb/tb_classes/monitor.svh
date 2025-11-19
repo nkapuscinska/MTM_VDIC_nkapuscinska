@@ -33,19 +33,33 @@ class monitor extends uvm_component;
         static bit prev_sout0 = 1;
         static bit prev_sout1 = 1;
 
+        $display("Monitor: Starting run phase...");
+        @(posedge bfm.rst_n);
         forever begin
-            @(posedge bfm.clk);
+
+            @(negedge bfm.sout0 or negedge bfm.sout1);
+
+                // $display("%t ,Monitor: Waiting for start bit... %0d, %0d",$time, bfm.sout0, bfm.sout1);
 
             if ((prev_sout0 == 1 && bfm.sout0 == 0) || (prev_sout1 == 1 && bfm.sout1 == 0)) begin
                 current_port = (bfm.sout1 == 0);
                 shift_reg = 0;
-
-                for (bit_index = 0; bit_index < 8; bit_index++) begin
-                    shift_reg[bit_index] = (current_port == 1) ? bfm.sout1 : bfm.sout0;
+                repeat (CLKS_PER_BIT/2) @(posedge bfm.clk);
+                for (bit_index = 0; bit_index < 10; bit_index++) begin
+                    // $display("Monitor: Receiving bit %0d from port %0d: %0b",
+                    //          bit_index, (current_port == 1) ? 1 : 0,
+                    //          (current_port == 1) ? bfm.sout1 : bfm.sout0);
+                    if (bit_index == 0) begin
+                        // Start bit, just wait
+                    end
+                    else if (bit_index == 9) begin
+                        // Parity Bit
+                    end
+                    else begin
+                    shift_reg[bit_index-1] = (current_port == 1) ? bfm.sout1 : bfm.sout0;
+                    end
                     repeat (CLKS_PER_BIT) @(posedge bfm.clk);
                 end
-
-                repeat (CLKS_PER_BIT * 2) @(posedge bfm.clk);
 
                 if (frame_phase == 0) begin
                     received_address = shift_reg;
@@ -58,14 +72,17 @@ class monitor extends uvm_component;
                     obs.data    = received_data;
                     obs.port    = current_port;
                     bfm.observed_q.push_back(obs);
-
-                    $display("Received packet: addr=%0d data=0x%0h actual_port=%0d",
-                            obs.address, obs.data, obs.port);
+                    // $display("Monitor: Observed packet on port %0d: address = 0x%0h, data = 0x%0h",
+                    //          (current_port == 1) ? 1 : 0,
+                    //          obs.address,
+                    //          obs.data);
                 end
             end
 
             prev_sout0 = bfm.sout0;
             prev_sout1 = bfm.sout1;
+        
+
         end
     endtask : run_phase
 endclass : monitor
