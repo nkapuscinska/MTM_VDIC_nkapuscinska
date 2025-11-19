@@ -6,6 +6,7 @@ xmcmds
 xmnowarn XCLGNOPTM
 xmnowarn RNDXCELON
 xmnowarn DSEMEL
+xmnowarn DLCVAR
 xmnowarn DSEM2009
 xmnowarn CGDEFN
 xmnowarn SAWSTP

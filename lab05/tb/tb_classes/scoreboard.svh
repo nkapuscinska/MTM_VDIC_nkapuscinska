@@ -1,21 +1,20 @@
 class scoreboard extends uvm_component;
     `uvm_component_utils(scoreboard)
 
-    function new (string name, uvm_component parent);
-        super.new(name, parent);
-    endfunction : new
-
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
     protected virtual switch_bfm bfm;
 
 //------------------------------------------------------------------------------
-// constructor
-//------------------------------------------------------------------------------
+
+
     function new (string name, uvm_component parent);
         super.new(name, parent);
     endfunction : new
+
+
+
 
 
     function void set_print_color (print_color_t c);
@@ -30,16 +29,28 @@ class scoreboard extends uvm_component;
         $write(ctl);
     endfunction
 
-    task execute();
+    
+//------------------------------------------------------------------------------
+// build phase
+//------------------------------------------------------------------------------
+    function void build_phase(uvm_phase phase);
+        if(!uvm_config_db #(virtual switch_bfm)::get(null, "*","bfm", bfm))
+            $fatal(1,"Failed to get BFM");
+    endfunction : build_phase
+
+
+//------------------------------------------------------------------------------
+// run phase
+//------------------------------------------------------------------------------
+     task run_phase(uvm_phase phase);
 
         fork
             main_scoreboard();
             reset_scoreboard();
             bad_parity_monitor();
-            end_of_test();
         join_none
         
-    endtask : execute
+    endtask : run_phase
 
     task main_scoreboard();
         automatic int errors = 0;
@@ -108,8 +119,7 @@ class scoreboard extends uvm_component;
         end
     endtask
 
-    task end_of_test();
-         @ (bfm.ev_end_of_test);
+    function void end_of_test();
         if (test_result == TEST_PASSED) begin
             set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
             $display("TEST RESULT: PASS");
@@ -119,6 +129,15 @@ class scoreboard extends uvm_component;
             $display("TEST RESULT: FAIL");
             set_print_color(COLOR_DEFAULT);
         end
-    endtask
+    endfunction : end_of_test
+
+//------------------------------------------------------------------------------
+// report phase
+//------------------------------------------------------------------------------
+    function void report_phase(uvm_phase phase);
+        super.report_phase(phase);
+        end_of_test();
+    endfunction : report_phase
+
 
 endclass : scoreboard

@@ -1,12 +1,27 @@
-class monitor  ;
+class monitor extends uvm_component;
+    `uvm_component_utils(monitor)
 
     protected virtual switch_bfm bfm;
 
-    function new (virtual switch_bfm b);
-        bfm = b;
+//------------------------------------------------------------------------------
+// constructor
+//------------------------------------------------------------------------------
+    function new (string name, uvm_component parent);
+        super.new(name, parent);
     endfunction : new
 
-    task execute();
+//------------------------------------------------------------------------------
+// build phase
+//------------------------------------------------------------------------------
+    function void build_phase(uvm_phase phase);
+        if(!uvm_config_db #(virtual switch_bfm)::get(null, "*","bfm", bfm))
+            $fatal(1,"Failed to get BFM");
+    endfunction : build_phase
+
+//------------------------------------------------------------------------------
+// run phase
+//------------------------------------------------------------------------------
+    task run_phase(uvm_phase phase);
 
         uart_observed_t obs;
         static bit [7:0] shift_reg = 0;
@@ -26,8 +41,8 @@ class monitor  ;
                 shift_reg = 0;
 
                 for (bit_index = 0; bit_index < 8; bit_index++) begin
-                    repeat (CLKS_PER_BIT) @(posedge bfm.clk);
                     shift_reg[bit_index] = (current_port == 1) ? bfm.sout1 : bfm.sout0;
+                    repeat (CLKS_PER_BIT) @(posedge bfm.clk);
                 end
 
                 repeat (CLKS_PER_BIT * 2) @(posedge bfm.clk);
@@ -45,12 +60,12 @@ class monitor  ;
                     bfm.observed_q.push_back(obs);
 
                     $display("Received packet: addr=%0d data=0x%0h actual_port=%0d",
-                             obs.address, obs.data, obs.port);
+                            obs.address, obs.data, obs.port);
                 end
             end
 
             prev_sout0 = bfm.sout0;
             prev_sout1 = bfm.sout1;
         end
-    endtask : execute
+    endtask : run_phase
 endclass : monitor

@@ -2,6 +2,8 @@
 // File created by:  xrun
 // Do not modify this file
 //
++UVM_NO_RELNOTES
++UVM_VERBOSITY=MEDIUM
 +incdir+tb_classes
 +incdir+.
 +nowarn+DSEMEL
@@ -13,12 +15,14 @@
 +nowarnXCLGNOPTM
 +nowarnRNDXCELON
 +nowarnSAWSTP
++nowarnDLCVAR
 -amsdlibdir
 ./INCA_libs/AMSD
 -loadpli
-/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.1d/additions/sv/lib/64bit/libuvmpli.so:uvm_pli_boot
+/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.2/sv/lib/64bit/libuvmpli.so:uvm_pli_boot
 -NOWARN
 DSEMEL
++FSMDEBUG
 -timescale
 1ns/1ps
 -V93
@@ -38,6 +42,8 @@ XCLGNOPTM
 RNDXCELON
 -NOWARN
 SAWSTP
+-NOWARN
+DLCVAR
 -XMLIBDIRNAME
 INCA_libs
 -NOCOPYRIGHT
@@ -45,7 +51,6 @@ INCA_libs
 all
 -COVFILE
 xrun_covfile.txt
-+UVM_TESTNAME=lab02_example
 -no_analogsolver
 -MESSAGES
 -dms_perf

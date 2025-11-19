@@ -1,6 +1,10 @@
 `timescale 1ns/1ps
 
 package fifomult_tb_pkg;
+
+import uvm_pkg::*;
+`include "uvm_macros.svh"
+
 localparam int unsigned CLKS_PER_BIT = 16;
 
 
@@ -65,12 +69,40 @@ port_t address_map [bit [7:0]];
 
 test_result_t        test_result = TEST_PASSED;
 
+//------------------------------------------------------------------------------
+// testbench classes
+//------------------------------------------------------------------------------
 
+function void set_print_color (print_color_t c);
+    string ctl;
+    case (c)
+        COLOR_BOLD_BLACK_ON_GREEN : ctl  = "\033[1;30m\033[102m";
+        COLOR_BOLD_BLACK_ON_RED   : ctl  = "\033[1;30m\033[101m";
+        COLOR_BOLD_BLACK_ON_YELLOW: ctl  = "\033[1;30m\033[103m";
+        COLOR_DEFAULT             : ctl  = "\033[0m";
+        default: ctl = "";
+    endcase
+    $write(ctl);
+endfunction
 
-`include "tb_classes/coverage.svh"
-`include "tb_classes/tp_gen.svh"
 `include "tb_classes/scoreboard.svh"
 `include "tb_classes/monitor.svh" 
-`include "tb_classes/testbench.svh"
+`include "tb_classes/coverage.svh"
+
+
+
+`include "tb_classes/base_tpgen.svh"
+`include "tb_classes/funct_tpgen.svh"
+`include "tb_classes/random_tpgen.svh"
+`include "tb_classes/bad_parity_tpgen.svh"
+`include "tb_classes/env.svh"
+//------------------------------------------------------------------------------
+// test classes
+//------------------------------------------------------------------------------
+
+`include "tb_classes/funct_test.svh"
+`include "tb_classes/random_test.svh"
+`include "tb_classes/bad_parity_test.svh"
+
 
 endpackage : fifomult_tb_pkg

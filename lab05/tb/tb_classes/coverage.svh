@@ -53,29 +53,22 @@ class coverage extends uvm_component;
 
     endgroup
 
-    function new (virtual switch_bfm b);
-        bfm = b;
-        op_adres      = new();
-        op_data      = new();
-        op_options      = new();
-    endfunction : new
-
-
 //------------------------------------------------------------------------------
 // constructor
 //------------------------------------------------------------------------------
     function new (string name, uvm_component parent);
         super.new(name, parent);
-        op_adres      = new();
-        op_data      = new();
-        op_options      = new();
+        op_adres = new();
+        op_data = new();
+        op_options = new();  
+
     endfunction : new
 
 //------------------------------------------------------------------------------
 // build phase
 //------------------------------------------------------------------------------
     function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(virtual switch_bfm_bfm)::get(null, "*","bfm", bfm))
+        if(!uvm_config_db #(virtual switch_bfm)::get(null, "*","bfm", bfm))
             $fatal(1,"Failed to get BFM");
     endfunction : build_phase
 
@@ -85,11 +78,10 @@ class coverage extends uvm_component;
     task run_phase(uvm_phase phase);
         forever begin : sampling_block
             @(negedge bfm.clk);
-            A      = bfm.A;
-            B      = bfm.B;
-            op_set = bfm.op_set;
-            op_cov.sample();
-            zeros_or_ones_on_ops.sample();
+
+            op_adres.sample();
+            op_data.sample();
+            op_options.sample();  
         end : sampling_block
     endtask : run_phase
 

@@ -6,9 +6,11 @@
 ../tb/tb_classes
 -INCDIR
 ../tb/.
+-LINEDEBUG
+-UVMLINEDEBUG
 -I_INCDIR
-/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.1d/sv/src
+/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.2/sv/src
 -DEFINE
 USE_PARAMETERIZED_WRAPPER
 -I_INCDIR
-/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.1d/additions/sv
+/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.2/sv/../additions/sv

@@ -3,8 +3,14 @@
 // Do not modify this file
 //
 -RUNMODE
+-INCDIR
+../tb/tb_classes
+-INCDIR
+../tb/.
 -NOWARN
 DSEMEL
+-LINEDEBUG
+-UVMLINEDEBUG
 -NOWARN
 DSEM2009
 -NOWARN
@@ -21,13 +27,15 @@ XCLGNOPTM
 RNDXCELON
 -NOWARN
 SAWSTP
+-NOWARN
+DLCVAR
 -NOCOPYRIGHT
 -I_INCDIR
-/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.1d/sv/src
+/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.2/sv/src
 -DEFINE
 USE_PARAMETERIZED_WRAPPER
 -I_INCDIR
-/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.1d/additions/sv
+/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.2/sv/../additions/sv
 -UPDATE
 -CDSLIB
 ./INCA_libs/run.lnx8664.24.09.d/cdsrun.lib
@@ -35,8 +43,8 @@ USE_PARAMETERIZED_WRAPPER
 ./INCA_libs/run.lnx8664.24.09.d/hdlrun.var
 -work
 worklib
--UVMNOSINGLESTEP
+-LINEDEBUG
 -define
 UVM_PLI
-/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.1d/sv/src/uvm_pkg.sv
-/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.1d/additions/sv/cdns_uvm_pkg.sv
+/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.2/sv/src/uvm_pkg.sv
+/eda/cadence/2024-25/RHELx86/XCELIUM_24.09.005/tools/methodology/UVM/CDNS-1.2/sv/../additions/sv/cdns_uvm_pkg.sv

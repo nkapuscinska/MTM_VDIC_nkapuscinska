@@ -1,5 +1,8 @@
 module top;
-import fifomult_tb_pkg::*;
+    import uvm_pkg::*;
+    `include "uvm_macros.svh"
+    import fifomult_tb_pkg::*;
+
 
     switch_bfm bfm();
 
@@ -11,13 +14,11 @@ import fifomult_tb_pkg::*;
     .sout0  (bfm.sout0),
     .sout1  (bfm.sout1)
     );
-
-    testbench testbench_h;
     
     initial begin
-        testbench_h = new(bfm);
-        testbench_h.execute();
-        //$finish;
+        uvm_config_db #(virtual switch_bfm)::set(null, "*", "bfm", bfm);
+        run_test();
     end
+    
 
 endmodule : top

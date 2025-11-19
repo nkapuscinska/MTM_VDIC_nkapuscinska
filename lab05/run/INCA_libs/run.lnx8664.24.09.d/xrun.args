@@ -13,6 +13,7 @@
 +nowarnXCLGNOPTM
 +nowarnRNDXCELON
 +nowarnSAWSTP
++nowarnDLCVAR
 -xmlibdirname
 INCA_libs
 +overwrite
@@ -22,6 +23,6 @@ all
 -covoverwrite
 -covfile
 xrun_covfile.txt
-+UVM_TESTNAME=lab02_example
++UVM_TESTNAME=bad_parity_test
 -l
-xrun_test_lab02_example.log
+xrun_test_bad_parity_test.log

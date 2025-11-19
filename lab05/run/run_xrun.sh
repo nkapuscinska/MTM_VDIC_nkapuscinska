@@ -1,6 +1,6 @@
 #!/bin/bash
 #------------------------------------------------------------------------------
-# (C) Copyright 2023 AGH University of Krakow, All Rights Reserved
+# (C) Copyright 2024 AGH University of Krakow, All Rights Reserved
 #------------------------------------------------------------------------------
 # Run script for MTM, Verification of Digital Integrated Circuis
 # 
@@ -15,12 +15,12 @@
 # To set the paths for xrun and imc, execute the following command in the terminal:
 # source ../../common/env.sh
 
-# Help library if available with command:
+# Help library is available with the command:
 # cdnshelp &
 
 #------------------------------------------------------------------------------
 # The list of tests; in GUI mode only the first test is started.
-TESTS=(lab02_example);
+TESTS=(funct_test random_test bad_parity_test);
 #------------------------------------------------------------------------------
 # Default .f file
 FFILE="../tb/tb.f"
@@ -67,7 +67,7 @@ function xrun_check_status() { #<<<
 
   if [[ "$status" != "0" ]]; then
     echo -e "$action $FAILED with status $status".
-#    #exit -1
+    #exit -1
   fi
   echo -e "$action finished with status 0 ($PASSED)."
   return 0
@@ -172,15 +172,19 @@ function check_uvm_fatal() { #<<<
   echo "CHECKING LOG FILE: $logfile"
   if [[ $(egrep  -c "^UVM_FATAL *: *[123456789]" $logfile) != "0" ]]; then
     echo -e "Simulation $FAILED with UVM_FATAL";
-#    #exit -1
+    #exit -1
   fi
-  if [[ $(egrep  -c "ERROR" $logfile) != "0" ]]; then
+  if [[ $(egrep  -c "^UVM_ERROR *: *[123456789]" $logfile) != "0" ]]; then
+    echo -e "Simulation $FAILED with UVM_ERROR";
+    #exit -1
+  fi
+  if [[ $(egrep  -c "\bERROR\b" $logfile) != "0" ]]; then
     echo -e "Simulation $FAILED with ERROR in the log file.";
-#    #exit -1
+    #exit -1
   fi
   if [[ $(egrep  -c '*F,NOLICN' $logfile) != "0" ]]; then
     echo -e "Simulation $FAILED - license error.";
-#    #exit -1
+    #exit -1
   fi
 } #>>>
 #------------------------------------------------------------------------------
@@ -208,7 +212,7 @@ while getopts cdf:gqh option
     f) FFILE=$OPTARG;;
     c) RUN_IMC=1;;
     h) syntax; exit 0;;
-    *) syntax; #exit -1;;
+    *) syntax; exit -1;;
   esac
 done
 #>>>
@@ -244,6 +248,7 @@ XRUN_ARGS="\
   +nowarnXCLGNOPTM \
   +nowarnRNDXCELON \
   +nowarnSAWSTP \
+  +nowarnDLCVAR \
   -xmlibdirname $INCA \
   $GUI \
   +overwrite \

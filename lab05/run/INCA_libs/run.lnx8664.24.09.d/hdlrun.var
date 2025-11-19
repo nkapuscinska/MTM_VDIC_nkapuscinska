@@ -88,3 +88,5 @@ define VIEW_MAP ( $VIEW_MAP \
 )
 define ELAB_SNAPSHOT
 define SNAPSHOT worklib.top:svp
+define ELAB_SNAPSHOT
+define SNAPSHOT worklib.top:svp
