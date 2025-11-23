@@ -36,7 +36,7 @@ class random_tpgen extends funct_tpgen;
 //------------------------------------------------------------------------------
    
     function automatic uart_packet_t send_functional_packets();
-        static byte unsigned i = 0;
+
         uart_packet_t packet;
         uart_observed_t exp;
         
@@ -46,7 +46,7 @@ class random_tpgen extends funct_tpgen;
         exp.data    = packet.data_frame.data_bits;
         exp.port    = address_map[i];
         bfm.expected_data_q.push_back(exp);
-        i = (i == 255) ? 0 : i + 1;
+
 
         return packet;
     endfunction

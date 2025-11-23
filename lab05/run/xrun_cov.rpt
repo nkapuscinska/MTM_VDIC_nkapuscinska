@@ -1,5 +1,5 @@
 *I,imc.tool.cov.version.diff: "There is a difference between the IMC tool version 24.03 and the coverage version 24.09-s005"
-*I,RUNLD: Successfully loaded run /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab05/run/cov_work/scope/funct_test.
+*I,RUNLD: Successfully loaded run /home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab05/run/cov_work/scope/bad_parity_test.
 *I,MERGL1: Merging Simulation Coverage ...
 ----------------------------
 *I,MERGL1: Preparing target model ...
@@ -7,6 +7,10 @@
 *I,MERGL1: Target model generated successfully.
 *I,MERGL1: Projecting Simulation ucd data into the target model ...
 *I,MERGL2:   cov_work/scope/funct_test:
+*I,MERGL3:       Data is projected in to the target model.
+*I,MERGL2:   cov_work/scope/random_test:
+*I,MERGL3:       Data is projected in to the target model.
+*I,MERGL2:   cov_work/scope/bad_parity_test:
 *I,MERGL3:       Data is projected in to the target model.
 *I,MERGL1: Writing output database cov_work/scope/merged_results:
 *I,MERGL2:   Model: cov_work/scope/merged_results/icc_7c3cd470_0d95fc60.ucm

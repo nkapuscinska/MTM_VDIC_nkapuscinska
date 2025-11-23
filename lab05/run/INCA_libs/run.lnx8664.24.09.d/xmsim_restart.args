@@ -46,6 +46,8 @@ SAWSTP
 DLCVAR
 -NOCOPYRIGHT
 -COVOVERWRITE
+-COVTEST
+bad_parity_test
 +UVM_TESTNAME=bad_parity_test
 -MESSAGES
 -RUN
@@ -54,7 +56,7 @@ DLCVAR
 +EMGRLOG
 xrun_test_bad_parity_test.log
 -XLSTIME
-1763592894
+1763728014
 -XLKEEP
 -XLMODE
 ./INCA_libs/run.lnx8664.24.09.d
@@ -68,4 +70,4 @@ xrun
 -XLVERSION
 "TOOL:	xrun(64)	24.09-s005"
 -XLNAME
-./INCA_libs/run.lnx8664.24.09.d/cadence25_23667
+./INCA_libs/run.lnx8664.24.09.d/cadence33_1024
