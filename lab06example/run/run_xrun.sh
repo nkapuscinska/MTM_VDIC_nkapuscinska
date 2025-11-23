@@ -247,6 +247,7 @@ XRUN_ARGS="\
   +nowarnBADPRF \
   +nowarnXCLGNOPTM \
   +nowarnRNDXCELON \
+  +nowarnCOVEOS \
   +nowarnSAWSTP \
   -xmlibdirname $INCA \
   $GUI \

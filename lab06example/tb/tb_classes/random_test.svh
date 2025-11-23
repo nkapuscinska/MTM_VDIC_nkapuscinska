@@ -13,23 +13,22 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-module top;
-import uvm_pkg::*;
-`include "uvm_macros.svh"
-import tinyalu_pkg::*;
-`include "tinyalu_macros.svh"
+class random_test extends uvm_test;
+    `uvm_component_utils(random_test)
 
-tinyalu_bfm bfm();
+    env env_h;
 
-tinyalu DUT (.A(bfm.A), .B(bfm.B), .op(bfm.op),
-    .clk(bfm.clk), .reset_n(bfm.reset_n),
-    .start(bfm.start), .done(bfm.done), .result(bfm.result));
+    function new (string name, uvm_component parent);
+        super.new(name,parent);
+    endfunction : new
 
-initial begin
-    uvm_config_db #(virtual tinyalu_bfm)::set(null, "*", "bfm", bfm);
-    run_test();
-end
+    function void build_phase(uvm_phase phase);
+        env_h = env::type_id::create("env_h",this);
+    endfunction : build_phase
+    
+    function void end_of_elaboration_phase(uvm_phase phase);
+        super.end_of_elaboration_phase(phase);
+        this.print(); // print test environment topology
+    endfunction : end_of_elaboration_phase
 
-endmodule : top
-
-
+endclass

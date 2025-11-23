@@ -13,37 +13,48 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-class random_test extends uvm_test;
-    `uvm_component_utils(random_test)
+class result_monitor extends uvm_component;
+    `uvm_component_utils(result_monitor)
 
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
-    env env_h;
+    protected virtual tinyalu_bfm bfm;
+    uvm_analysis_port #(shortint) ap;
 
 //------------------------------------------------------------------------------
 // constructor
 //------------------------------------------------------------------------------
     function new (string name, uvm_component parent);
-        super.new(name,parent);
+        super.new(name, parent);
     endfunction : new
+
+//------------------------------------------------------------------------------
+// monitoring function called from BFM
+//------------------------------------------------------------------------------
+    function void write_to_monitor(shortint r);
+        `ifdef DEBUG
+        $display ("RESULT MONITOR: resultA: 0x%0h",r);
+        `endif
+        ap.write(r);
+    endfunction : write_to_monitor
 
 //------------------------------------------------------------------------------
 // build phase
 //------------------------------------------------------------------------------
     function void build_phase(uvm_phase phase);
-        env_h = env::type_id::create("env_h",this);
+        if(!uvm_config_db #(virtual tinyalu_bfm)::get(null, "*","bfm", bfm))
+            $fatal(1, "Failed to get BFM");
+        bfm.result_monitor_h = this;
+        ap                   = new("ap",this);
     endfunction : build_phase
 
-//------------------------------------------------------------------------------
-// start-of-simulation-phase
-//------------------------------------------------------------------------------
-    virtual function void start_of_simulation_phase(uvm_phase phase);
-        super.start_of_simulation_phase(phase);
-        // Print the test topology
-        uvm_top.print_topology();
-    endfunction : start_of_simulation_phase
 
-endclass
+
+endclass : result_monitor
+
+
+
+
 
 

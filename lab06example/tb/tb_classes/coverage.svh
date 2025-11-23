@@ -13,14 +13,12 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-class coverage extends uvm_component;
+class coverage extends uvm_subscriber #(command_s);
     `uvm_component_utils(coverage)
 
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
-    protected virtual tinyalu_bfm bfm;
-
     protected byte unsigned A;
     protected byte unsigned B;
     protected operation_t op_set;
@@ -44,9 +42,13 @@ class coverage extends uvm_component;
 
             bins twoops[]       = ([add_op:mul_op] [* 2]);
             bins manymult       = (mul_op [* 3:5]);
-        }
-    endgroup
 
+            bins rstmulrst      = (rst_op => mul_op [* 2] => rst_op);
+            bins rstmulrstim    = (rst_op => mul_op [-> 2] => rst_op);
+
+        }
+
+    endgroup
 
     covergroup zeros_or_ones_on_ops;
 
@@ -97,7 +99,9 @@ class coverage extends uvm_component;
 
             ignore_bins others_only =
             binsof(a_leg.others) && binsof(b_leg.others);
+
         }
+
     endgroup
 
 //------------------------------------------------------------------------------
@@ -110,26 +114,15 @@ class coverage extends uvm_component;
     endfunction : new
 
 //------------------------------------------------------------------------------
-// build phase
+// subscriber write function
 //------------------------------------------------------------------------------
-    function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(virtual tinyalu_bfm)::get(null, "*","bfm", bfm))
-            $fatal(1,"Failed to get BFM");
-    endfunction : build_phase
-
-//------------------------------------------------------------------------------
-// run phase
-//------------------------------------------------------------------------------
-    task run_phase(uvm_phase phase);
-        forever begin : sampling_block
-            @(negedge bfm.clk);
-            A      = bfm.A;
-            B      = bfm.B;
-            op_set = bfm.op_set;
-            op_cov.sample();
-            zeros_or_ones_on_ops.sample();
-        end : sampling_block
-    endtask : run_phase
+    function void write(command_s t);
+        A      = t.A;
+        B      = t.B;
+        op_set = t.op;
+        op_cov.sample();
+        zeros_or_ones_on_ops.sample();
+    endfunction : write
 
 
 endclass : coverage

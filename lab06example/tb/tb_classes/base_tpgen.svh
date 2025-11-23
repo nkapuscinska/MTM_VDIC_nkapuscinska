@@ -15,13 +15,19 @@
  */
 virtual class base_tpgen extends uvm_component;
 
-// The macro is not there as we never instantiate/use the base_tpgen
-//    `uvm_component_utils(base_tpgen)
+// base tpgen instance is never created, so we do not need macros
+//     `uvm_component_utils(base_tpgen)
 
 //------------------------------------------------------------------------------
-// local variables
+// port for sending the transactions
 //------------------------------------------------------------------------------
-    protected virtual tinyalu_bfm bfm;
+    uvm_put_port #(command_s) command_port;
+
+//------------------------------------------------------------------------------
+//  function prototypes
+//------------------------------------------------------------------------------
+    pure virtual protected function operation_t get_op();
+    pure virtual protected function byte get_data();
 
 //------------------------------------------------------------------------------
 // constructor
@@ -29,45 +35,32 @@ virtual class base_tpgen extends uvm_component;
     function new (string name, uvm_component parent);
         super.new(name, parent);
     endfunction : new
-    
-//------------------------------------------------------------------------------
-// function prototypes
-//------------------------------------------------------------------------------
-    pure virtual protected function operation_t get_op();
-    pure virtual protected function byte get_data();
 
 //------------------------------------------------------------------------------
 // build phase
 //------------------------------------------------------------------------------
     function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(virtual tinyalu_bfm)::get(null, "*","bfm", bfm))
-            $fatal(1,"Failed to get BFM");
+        command_port = new("command_port", this);
     endfunction : build_phase
 
 //------------------------------------------------------------------------------
 // run phase
 //------------------------------------------------------------------------------
     task run_phase(uvm_phase phase);
-        byte unsigned iA;
-        byte unsigned iB;
-        operation_t op_set;
-        shortint result;
+
+        command_s command;
 
         phase.raise_objection(this);
-
-        bfm.reset_alu();
-
-        repeat (1000) begin : random_loop
-            op_set = get_op();
-            iA     = get_data();
-            iB     = get_data();
-            bfm.send_op(iA, iB, op_set, result);
+        command.op = rst_op;
+        command_port.put(command);
+        repeat (10000) begin : random_loop
+            command.op = get_op();
+            command.A  = get_data();
+            command.B  = get_data();
+            command_port.put(command);
         end : random_loop
-
-//      #500;
-
+        #500;
         phase.drop_objection(this);
-
     endtask : run_phase
 
 
