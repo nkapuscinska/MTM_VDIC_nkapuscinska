@@ -1,10 +1,9 @@
-class scoreboard extends uvm_component;
+class scoreboard extends uvm_subscriber #(uart_packet_t);
     `uvm_component_utils(scoreboard)
 
-//------------------------------------------------------------------------------
-// local variables
-//------------------------------------------------------------------------------
-    protected virtual switch_bfm bfm;
+
+     uvm_tlm_analysis_fifo #(command_s) cmd_f; 
+
 
 //------------------------------------------------------------------------------
 
@@ -34,89 +33,56 @@ class scoreboard extends uvm_component;
 // build phase
 //------------------------------------------------------------------------------
     function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(virtual switch_bfm)::get(null, "*","bfm", bfm))
-            $fatal(1,"Failed to get BFM");
+        cmd_f = new("cmd_f", this);
     endfunction : build_phase
 
 
 //------------------------------------------------------------------------------
 // run phase
 //------------------------------------------------------------------------------
-     task run_phase(uvm_phase phase);
 
-        fork
-            main_scoreboard();
-            reset_scoreboard();
-            bad_parity_monitor();
-        join_none
-        
-    endtask : run_phase
 
-    task main_scoreboard();
-        automatic int errors = 0;
-        uart_observed_t exp, obs;
 
-        $display("Scoreboard running... waiting for packets.");
 
-        forever begin
-            wait (bfm.expected_data_q.size() > 0 && bfm.observed_q.size() > 0);
-            exp = bfm.expected_data_q.pop_front();
-            obs = bfm.observed_q.pop_front();
+    // task reset_scoreboard();
+    //     forever begin
+    //         @ (bfm.ev_reset_test_start);
+    //         $display("=== Starting RESET test ===");
+    //         repeat (3) @(posedge bfm.clk);
+    //         if (bfm.sout0 !== 1'b1 || bfm.sout1 !== 1'b1) begin
+    //             set_print_color(COLOR_BOLD_BLACK_ON_RED);
+    //             $display("RESET TEST → FAIL (sout0=%b, sout1=%b)", bfm.sout0, bfm.sout1);
+    //             set_print_color(COLOR_DEFAULT);
+    //         end else begin
+    //             set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
+    //             $display("RESET TEST → PASS (sout0=%b, sout1=%b)", bfm.sout0, bfm.sout1);
+    //             set_print_color(COLOR_DEFAULT);
+    //         end
+    //         set_print_color(COLOR_DEFAULT);
+    //     end
+    // endtask
 
-            if (obs.data    === exp.data &&
-                obs.port    === address_map[obs.address]) begin
-                set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
-                $display("[%0t] PASS addr=%0d exp_port=%0d obs_port=%0d exp_data=0x%0h obs_data=0x%0h",
-                         $time, obs.address, address_map[obs.address], obs.port, exp.data, obs.data);
-            end else begin
-                set_print_color(COLOR_BOLD_BLACK_ON_RED);
-                $display("[%0t] FAIL addr=%0d exp_port=%0d obs_port=%0d exp_data=0x%0h obs_data=0x%0h",
-                         $time, obs.address, address_map[obs.address], obs.port, exp.data, obs.data);
-                errors++;
-            end
-            set_print_color(COLOR_DEFAULT);
-        end
-    endtask
+    // task bad_parity_monitor();
+    //     int obs_before;
+    //     forever begin
+    //         @ (bfm.ev_bad_parity_test_start);
+    //         obs_before = bfm.observed_q.size();
 
-    task reset_scoreboard();
-        forever begin
-            @ (bfm.ev_reset_test_start);
-            $display("=== Starting RESET test ===");
-            repeat (3) @(posedge bfm.clk);
-            if (bfm.sout0 !== 1'b1 || bfm.sout1 !== 1'b1) begin
-                set_print_color(COLOR_BOLD_BLACK_ON_RED);
-                $display("RESET TEST → FAIL (sout0=%b, sout1=%b)", bfm.sout0, bfm.sout1);
-                set_print_color(COLOR_DEFAULT);
-            end else begin
-                set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
-                $display("RESET TEST → PASS (sout0=%b, sout1=%b)", bfm.sout0, bfm.sout1);
-                set_print_color(COLOR_DEFAULT);
-            end
-            set_print_color(COLOR_DEFAULT);
-        end
-    endtask
+    //         $display("=== Starting BAD PARITY test ===");
 
-    task bad_parity_monitor();
-        int obs_before;
-        forever begin
-            @ (bfm.ev_bad_parity_test_start);
-            obs_before = bfm.observed_q.size();
-
-            $display("=== Starting BAD PARITY test ===");
-
-            # (CLKS_PER_BIT * 20); //waiting for dut 
-            if (bfm.observed_q.size() > obs_before) begin
-                set_print_color(COLOR_BOLD_BLACK_ON_RED);
-                $display("FAIL: DUT forwarded bad parity frame");
-                set_print_color(COLOR_DEFAULT);
-            end else begin
-                set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
-                $display("PASS: DUT ignored bad parity frame");
-                set_print_color(COLOR_DEFAULT);
-            end
-            set_print_color(COLOR_DEFAULT);
-        end
-    endtask
+    //         # (CLKS_PER_BIT * 20); //waiting for dut 
+    //         if (bfm.observed_q.size() > obs_before) begin
+    //             set_print_color(COLOR_BOLD_BLACK_ON_RED);
+    //             $display("FAIL: DUT forwarded bad parity frame");
+    //             set_print_color(COLOR_DEFAULT);
+    //         end else begin
+    //             set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
+    //             $display("PASS: DUT ignored bad parity frame");
+    //             set_print_color(COLOR_DEFAULT);
+    //         end
+    //         set_print_color(COLOR_DEFAULT);
+    //     end
+    // endtask
 
     function void end_of_test();
         if (test_result == TEST_PASSED) begin
@@ -130,6 +96,40 @@ class scoreboard extends uvm_component;
         end
     endfunction : end_of_test
 
+    //------------------------------------------------------------------------------
+// subscriber write function
+//------------------------------------------------------------------------------
+    function void write(uart_packet_t t);
+        shortint predicted_result;
+        command_s cmd;
+        
+        uart_packet_t exp;
+        uart_packet_t obs;
+        do
+            if (!cmd_f.try_get(cmd))
+                $fatal(1, "Missing command in self checker");
+
+        while ((cmd.op == config_op)||(cmd.op == rst_op));
+        exp = cmd.packet;
+        obs = t;
+
+        $display("Scoreboard running... waiting for packets.");
+
+            if (t.data_frame.data_bits  ===  cmd.packet.data_frame.data_bits &&
+                obs.port    === address_map[exp.adres_frame.data_bits]) begin
+                set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
+                $display("[%0t] PASS addr=%0d exp_port=%0d obs_port=%0d exp_data=0x%0h obs_data=0x%0h",
+                         $time, obs.adres_frame.data_bits, address_map[exp.adres_frame.data_bits], obs.port, exp.data_frame.data_bits, obs.data_frame.data_bits);
+            end else begin
+                set_print_color(COLOR_BOLD_BLACK_ON_RED);
+                $display("[%0t] FAIL addr=%0d exp_port=%0d obs_port=%0d exp_data=0x%0h obs_data=0x%0h",
+                         $time, obs.adres_frame.data_bits, address_map[obs.adres_frame.data_bits], obs.port, exp.data_frame.data_bits, obs.data_frame.data_bits);
+            end
+            set_print_color(COLOR_DEFAULT);
+
+    endfunction : write
+
+//-------------------------------
 //------------------------------------------------------------------------------
 // report phase
 //------------------------------------------------------------------------------

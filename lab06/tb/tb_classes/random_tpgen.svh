@@ -38,15 +38,10 @@ class random_tpgen extends funct_tpgen;
     function automatic uart_packet_t send_functional_packets();
 
         uart_packet_t packet;
-        uart_observed_t exp;
+        // uart_observed_t exp;
         
         packet = create_random_functional_packet();
         //send_uart_packet(packet, bfm.sin);
-        exp.address = i;
-        exp.data    = packet.data_frame.data_bits;
-        exp.port    = address_map[i];
-        bfm.expected_data_q.push_back(exp);
-
 
         return packet;
     endfunction

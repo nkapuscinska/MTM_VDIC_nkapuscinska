@@ -9,14 +9,13 @@ class funct_tpgen extends base_tpgen;
     function automatic uart_packet_t send_functional_packets();
         static byte unsigned i = 0;
         uart_packet_t packet;
-        uart_observed_t exp;
+        uart_packet_t exp;
         
         packet = create_functional_packet(i);
         //send_uart_packet(packet, bfm.sin);
-        exp.address = i;
-        exp.data    = packet.data_frame.data_bits;
-        exp.port    = address_map[i];
-        bfm.expected_data_q.push_back(exp);
+        // exp.address = i;
+        // exp.data    = packet.data_frame.data_bits;
+        // exp.port    = address_map[i];
         i = (i == 255) ? 0 : i + 1;
 
         return packet;

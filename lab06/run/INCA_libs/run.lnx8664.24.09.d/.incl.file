@@ -40,10 +40,6 @@
 ./macros/uvm_deprecated_defines.svh
 ../tb/tb_classes/macros/uvm_deprecated_defines.svh
 ../tb/./macros/uvm_deprecated_defines.svh
-./tb_classes/scoreboard.svh
-../tb/tb_classes/tb_classes/scoreboard.svh
-./tb_classes/monitor.svh
-../tb/tb_classes/tb_classes/monitor.svh
 ./tb_classes/coverage.svh
 ../tb/tb_classes/tb_classes/coverage.svh
 ./tb_classes/base_tpgen.svh
@@ -54,6 +50,14 @@
 ../tb/tb_classes/tb_classes/random_tpgen.svh
 ./tb_classes/bad_parity_tpgen.svh
 ../tb/tb_classes/tb_classes/bad_parity_tpgen.svh
+./tb_classes/scoreboard.svh
+../tb/tb_classes/tb_classes/scoreboard.svh
+./tb_classes/driver.svh
+../tb/tb_classes/tb_classes/driver.svh
+./tb_classes/result_monitor.svh
+../tb/tb_classes/tb_classes/result_monitor.svh
+./tb_classes/command_monitor.svh
+../tb/tb_classes/tb_classes/command_monitor.svh
 ./tb_classes/env.svh
 ../tb/tb_classes/tb_classes/env.svh
 ./tb_classes/funct_test.svh

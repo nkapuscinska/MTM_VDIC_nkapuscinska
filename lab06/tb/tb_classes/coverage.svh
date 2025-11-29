@@ -1,10 +1,8 @@
-class coverage extends uvm_component;
+class coverage extends uvm_subscriber #(command_s);
     `uvm_component_utils(coverage)
 
-    protected virtual switch_bfm bfm;
 
-
-    
+    operation_t op;
 //------------------------------------------------------------------------------
 // covergroups
 //------------------------------------------------------------------------------
@@ -14,11 +12,11 @@ class coverage extends uvm_component;
         option.name = "cg_op_adres";
 
         coverpoint addr_cov {
-            bins A1_all_addr[] = {[0:255]} iff (bfm.prog == 1);
+            bins A1_all_addr[] = {[0:255]} iff (op == config_op);
         }
 
         coverpoint port_cov {
-            bins A2_all_ports[] = {[0:1]} iff (bfm.prog == 1);
+            bins A2_all_ports[] = {[0:1]} iff (op == config_op);
         }
 
 
@@ -30,28 +28,28 @@ class coverage extends uvm_component;
 
         coverpoint data_cov {
             // #A1 test all adresses
-            bins A1_all_data[]     = {[0:255]} iff (bfm.prog == 0);
+            bins A1_all_data[]     = {[0:255]} iff (op == func_op);
 
         }
 
     endgroup
 
     // Covergroup checking the adressing
-    covergroup op_options;
+    // covergroup op_options;
 
-        option.name = "cg_op_options";
+    //     option.name = "cg_op_options";
 
-        coverpoint bfm.prog {
-            // #A1 test if programing mode was tested
-            bins A1_prog[]     = {[0:1]};
-        }
-        coverpoint bfm.rst_n {
-            // #A2 test if rst_n was triggered
-            bins A2_Reset_n[]      = {[0:1]};
+    //     coverpoint bfm.prog {
+    //         // #A1 test if programing mode was tested
+    //         bins A1_prog[]     = {[0:1]};
+    //     }
+    //     coverpoint bfm.rst_n {
+    //         // #A2 test if rst_n was triggered
+    //         bins A2_Reset_n[]      = {[0:1]};
 
-        }
+    //     }
 
-    endgroup
+    // endgroup
 
 //------------------------------------------------------------------------------
 // constructor
@@ -60,31 +58,21 @@ class coverage extends uvm_component;
         super.new(name, parent);
         op_adres = new();
         op_data = new();
-        op_options = new();  
+        //op_options = new();  
 
     endfunction : new
 
-//------------------------------------------------------------------------------
-// build phase
-//------------------------------------------------------------------------------
-    function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(virtual switch_bfm)::get(null, "*","bfm", bfm))
-            $fatal(1,"Failed to get BFM");
-    endfunction : build_phase
 
 //------------------------------------------------------------------------------
-// run phase
+// subscriber write function
 //------------------------------------------------------------------------------
-    task run_phase(uvm_phase phase);
-        forever begin : sampling_block
-            @(negedge bfm.clk);
+    function void write(command_s t);
+        
+        op = t.op;
+        op_adres.sample();
+        op_data.sample();
+        //op_options.sample();  
 
-            op_adres.sample();
-            op_data.sample();
-            op_options.sample();  
-        end : sampling_block
-    endtask : run_phase
-
-
+    endfunction : write
 
 endclass : coverage

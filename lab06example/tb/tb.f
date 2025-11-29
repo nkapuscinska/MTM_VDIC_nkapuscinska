@@ -2,8 +2,8 @@ tinyalu_tb_pkg.sv
 tinyalu_bfm.sv
 -F ../../common/tinyalu/tinyalu.f
 top.sv
-+incdir+tb_classes
-+incdir+.
+../MTM_VDIC_nkapuscinska/lab06/tb
+../MTM_VDIC_nkapuscinska/lab06/tb/tb_classes
 +nowarn+DSEMEL
 +nowarnBADPRF
 -uvm

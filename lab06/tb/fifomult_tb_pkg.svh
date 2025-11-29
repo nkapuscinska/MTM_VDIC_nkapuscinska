@@ -7,7 +7,6 @@ import uvm_pkg::*;
 
 localparam int unsigned CLKS_PER_BIT = 16;
 
-
 typedef enum bit {
     TEST_PASSED,
     TEST_FAILED
@@ -25,13 +24,20 @@ typedef struct packed {
 typedef struct {
     uart_frame_t    adres_frame;
     uart_frame_t    data_frame;
+    bit             port;
 } uart_packet_t;
 
+typedef enum {
+    config_op,
+    rst_op,
+    func_op
+} operation_t;
+
 typedef struct {
-    bit [7:0] address;
-    bit [7:0] data;
-    bit port;
-} uart_observed_t;
+    uart_packet_t packet;
+    operation_t op;
+} command_s;
+
 
 bit [7:0] addr;
 bit [7:0] data;
@@ -54,7 +60,6 @@ typedef enum {
 } print_color_t;
 
 
-
 typedef bit [7:0] addr_t;
 typedef bit [7:0] port_t;
 
@@ -62,6 +67,8 @@ port_t temp;
 addr_t key;
 
 port_t address_map [bit [7:0]];
+
+
 //------------------------------------------------------------------------------
 // Local variables
 //------------------------------------------------------------------------------
@@ -85,24 +92,33 @@ function void set_print_color (print_color_t c);
     $write(ctl);
 endfunction
 
-`include "tb_classes/scoreboard.svh"
-`include "tb_classes/monitor.svh" 
+
+
+
 `include "tb_classes/coverage.svh"
 
 
 
 `include "tb_classes/base_tpgen.svh"
-`include "tb_classes/funct_tpgen.svh"
-`include "tb_classes/random_tpgen.svh"
-`include "tb_classes/bad_parity_tpgen.svh"
-`include "tb_classes/env.svh"
+
+
 //------------------------------------------------------------------------------
 // test classes
 //------------------------------------------------------------------------------
 
+
+
+`include "tb_classes/funct_tpgen.svh"
+`include "tb_classes/random_tpgen.svh"
+`include "tb_classes/bad_parity_tpgen.svh"
+
+`include "tb_classes/scoreboard.svh"
+`include "tb_classes/driver.svh"
+`include "tb_classes/result_monitor.svh" 
+`include "tb_classes/command_monitor.svh" 
+`include "tb_classes/env.svh"
+
 `include "tb_classes/funct_test.svh"
 `include "tb_classes/random_test.svh"
 `include "tb_classes/bad_parity_test.svh"
-
-
 endpackage : fifomult_tb_pkg

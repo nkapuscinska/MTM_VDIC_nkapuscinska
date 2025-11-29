@@ -21,7 +21,7 @@ virtual class base_tpgen extends uvm_component;
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
-    protected virtual switch_bfm bfm;
+    uvm_put_port #(command_s) command_port;
 
 //------------------------------------------------------------------------------
 // constructor
@@ -41,8 +41,7 @@ virtual class base_tpgen extends uvm_component;
 // build phase
 //------------------------------------------------------------------------------
     function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(virtual switch_bfm)::get(null, "*","bfm", bfm))
-            $fatal(1,"Failed to get BFM");
+        command_port = new("command_port",this);
     endfunction : build_phase
 
 
@@ -64,6 +63,7 @@ virtual class base_tpgen extends uvm_component;
 
     function uart_packet_t create_functional_packet(bit [7:0] address);
         uart_packet_t funct_packet;
+        command_s command;
         bit [7:0] data;
 
         data = $urandom_range(0, 255);
@@ -89,74 +89,54 @@ virtual class base_tpgen extends uvm_component;
         return prog_packet;
     endfunction
 
-
-    function void send_uart_packet(input uart_packet_t packet, ref bit input_sin);
-        addr_cov = packet.adres_frame.data_bits;
-        data_cov = packet.data_frame.data_bits;
-        port_cov = packet.data_frame.data_bits;
-        // $display("Sending UART packet: addr=%0h data=0x%0h",
-        //     packet.adres_frame.data_bits,
-        //     packet.data_frame.data_bits);
-        bfm.send_uart_frame(packet.adres_frame, input_sin);
-        bfm.send_uart_frame(packet.data_frame, input_sin);
-
-    endfunction
-
-    task automatic generate_config_packets();
+    function automatic uart_packet_t generate_config_packets();
         uart_packet_t pkt;
         bit [7:0] port;
+        static byte unsigned i = 0;
+        
 
-        for (int conf_addr = 0; conf_addr < 256; conf_addr++) begin
             // generowanie portu losowego
             port = $urandom_range(0, 1);
 
             // tworzenie pakietu programowania
-            pkt.adres_frame = create_uart_frame(conf_addr);
+            pkt.adres_frame = create_uart_frame(i);
             pkt.data_frame  = create_uart_frame(port);
 
             // dodanie do kolejki i mapy adresów
-            bfm.packet_q.push_back(pkt);
-            address_map[conf_addr] = pkt.data_frame.data_bits;
-        end
-    endtask
+            // bfm.packet_q.push_back(pkt);
+            i = (i == 255) ? 0 : i + 1;
 
+            return pkt;
 
+    endfunction
 
-    task automatic send_config_packets();
-        $display("Starting to send config packets...");
-
-        generate_config_packets();
-
-        while (bfm.packet_q.size() > 0) begin
-            uart_packet_t pkt;
-            pkt = bfm.packet_q.pop_front();
-            send_uart_packet(pkt, bfm.sin);
-        end
-
-        $display("Config packets done.");
-    endtask
 
 //------------------------------------------------------------------------------
 // run phase
 //------------------------------------------------------------------------------
     task run_phase(uvm_phase phase);
+        command_s command; 
         uart_packet_t packet;
         shortint result;
 
         phase.raise_objection(this);
 
-        bfm.reset();
-        bfm.prog = 1;
-        send_config_packets();
-        bfm.prog = 0;
+        command.op = rst_op;
+
+
+        command.op = config_op;
+        command.packet = generate_config_packets();
+
+
+    
 
         repeat (1000) begin : random_loop
-            repeat (CLKS_PER_BIT) @(posedge bfm.clk);
-            packet = get_packet();
-            send_uart_packet(packet, bfm.sin);
+
+            command.op = func_op;
+            command.packet = get_packet();
 
         end : random_loop
-        -> bfm.ev_end_of_test;
+        //-> bfm.ev_end_of_test;
 
 //      #500;
 

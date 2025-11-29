@@ -23,8 +23,6 @@ all
 -covoverwrite
 -covfile
 xrun_covfile.txt
--covtest
-bad_parity_test
 +UVM_TESTNAME=bad_parity_test
 -l
 xrun_test_bad_parity_test.log

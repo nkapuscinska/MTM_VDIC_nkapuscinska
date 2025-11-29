@@ -27,6 +27,4 @@ DLCVAR
 -COVERAGE
 all
 -COVOVERWRITE
--COVTEST
-bad_parity_test
 -UPDATE
