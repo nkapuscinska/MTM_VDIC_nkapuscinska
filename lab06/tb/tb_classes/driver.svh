@@ -60,7 +60,8 @@ class driver extends uvm_component;
                 config_op: begin 
                     $display("Starting to send config packets...");
                     bfm.prog = 1;
-                    send_uart_packet(command.packet);
+                    bfm.send_uart_frame(command.packet, config_op);
+                    $display("send");
                     
                 end
             endcase
