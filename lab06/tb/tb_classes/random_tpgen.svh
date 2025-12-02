@@ -41,8 +41,8 @@ class random_tpgen extends funct_tpgen;
         bit [7:0] data;
         bit [7:0] address;
 
-        data = $urandom_range(0, 255);
-        address = $urandom_range(0, 255);
+        data = byte'($urandom_range(0, 255));
+        address = byte'($urandom_range(0, 255));
         
 
         funct_packet.adres_frame = create_uart_frame(address);

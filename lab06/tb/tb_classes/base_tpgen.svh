@@ -66,7 +66,7 @@ virtual class base_tpgen extends uvm_component;
         command_s command;
         bit [7:0] data;
 
-        data = $urandom_range(0, 255);
+        data = byte'($urandom_range(0, 255)); 
         
 
         funct_packet.adres_frame = create_uart_frame(address);
@@ -81,7 +81,7 @@ virtual class base_tpgen extends uvm_component;
         uart_packet_t prog_packet;
         bit [7:0] port;
 
-        port = $urandom_range(0, 1);
+        port = byte'($urandom_range(0, 1));
 
         prog_packet.adres_frame = create_uart_frame(address);
         prog_packet.data_frame  = create_uart_frame(port);
@@ -96,7 +96,7 @@ virtual class base_tpgen extends uvm_component;
         
 
             // generowanie portu losowego
-            port = $urandom_range(0, 1);
+            port = byte'($urandom_range(0, 1));
 
             // tworzenie pakietu programowania
             pkt.adres_frame = create_uart_frame(i);

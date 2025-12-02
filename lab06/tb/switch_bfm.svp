@@ -29,10 +29,10 @@ result_monitor result_monitor_h;
         command_s cmd;
         bit [7:0] shift_reg;
         bit [3:0] bit_index;
-        bit frame_phase = 0;
+        automatic bit frame_phase = 0;
         bit [7:0] received_address, received_data;
         bit current_port;
-        bit prev_sout0 = 1, prev_sout1 = 1;
+        automatic bit prev_sout0 = 1, prev_sout1 = 1;
 
         // pkt, który złożymy i wyślemy do scoreboardu
         uart_packet_t pkt;
