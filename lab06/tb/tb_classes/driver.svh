@@ -40,9 +40,9 @@ class driver extends uvm_component;
 //------------------------------------------------------------------------------
     task run_phase(uvm_phase phase);
         command_s command;
-        shortint result;
-
+        
         forever begin : command_loop
+            command_port.get(command);
             case(command.op)
                 rst_op: begin
                     $display("Starting reset...");
@@ -51,24 +51,24 @@ class driver extends uvm_component;
                 end
 
                 func_op: begin
-                    $display("Sending functional packets...");
                     bfm.prog = 0;
                     bfm.send_uart_frame(command.packet, func_op);
                     send_uart_packet(command.packet);
                 end
 
+                bparity_op: begin
+                    bfm.prog = 0;
+                    $display("Sending UART frame with bad parity...");
+                    bfm.send_uart_frame(command.packet, func_op, 1);
+                    send_uart_packet(command.packet);
+                end
+
                 config_op: begin 
-                    $display("Starting to send config packets...");
                     bfm.prog = 1;
                     bfm.send_uart_frame(command.packet, config_op);
-                    $display("send");
-                    
+                    bfm.prog = 0;
                 end
             endcase
-
-            command_port.get(command);
-            
-        
         end : command_loop
     endtask : run_phase
     

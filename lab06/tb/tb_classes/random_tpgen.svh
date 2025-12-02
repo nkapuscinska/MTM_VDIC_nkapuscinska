@@ -35,16 +35,6 @@ class random_tpgen extends funct_tpgen;
 // functions and tasks
 //------------------------------------------------------------------------------
    
-    function automatic uart_packet_t send_functional_packets();
-
-        uart_packet_t packet;
-        // uart_observed_t exp;
-        
-        packet = create_random_functional_packet();
-        //send_uart_packet(packet, bfm.sin);
-
-        return packet;
-    endfunction
 
     function uart_packet_t create_random_functional_packet();
         uart_packet_t funct_packet;
@@ -64,7 +54,7 @@ class random_tpgen extends funct_tpgen;
 
     protected function uart_packet_t get_packet();
         uart_packet_t packet;
-        packet = send_functional_packets();
+        packet = create_random_functional_packet();
         return packet;
     endfunction : get_packet
 

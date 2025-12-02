@@ -1,3 +1,4 @@
+
 `timescale 1ns/1ps
 
 package fifomult_tb_pkg;
@@ -30,7 +31,8 @@ typedef struct {
 typedef enum {
     config_op,
     rst_op,
-    func_op
+    func_op,
+    bparity_op
 } operation_t;
 
 typedef struct {

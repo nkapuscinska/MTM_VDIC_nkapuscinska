@@ -106,8 +106,6 @@ class scoreboard extends uvm_subscriber #(uart_packet_t);
         uart_packet_t exp;
         uart_packet_t obs;
 
-        $display("Scoreboard received packet: addr=%0d data=0x%0h",
-                 t.adres_frame.data_bits, t.data_frame.data_bits);
         do
             if (!cmd_f.try_get(cmd))
                 $fatal(1, "Missing command in self checker");

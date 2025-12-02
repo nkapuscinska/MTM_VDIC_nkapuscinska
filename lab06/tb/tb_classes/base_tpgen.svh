@@ -124,20 +124,28 @@ virtual class base_tpgen extends uvm_component;
         command.op = rst_op;
         command_port.put(command);
 
-        repeat (255) begin
-           command.op = config_op;
+        repeat (256) begin
+            command.op = config_op;
             command.packet = generate_config_packets(); 
             command_port.put(command);
         end
         
 
-        repeat (1000) begin : random_loop
+        repeat (256) begin : random_loop
             
             command.op = func_op;
             command.packet = get_packet();
             command_port.put(command);
 
         end : random_loop
+
+        repeat (5) begin : bad_parity_loop
+            
+            command.op = bparity_op;
+            command.packet = get_packet();
+            command_port.put(command);
+
+        end : bad_parity_loop
         //-> bfm.ev_end_of_test;
 
       #5000;

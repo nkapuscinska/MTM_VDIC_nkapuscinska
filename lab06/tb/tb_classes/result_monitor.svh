@@ -19,9 +19,7 @@ class result_monitor extends uvm_component;
     endfunction
 
     function void write_to_monitor(uart_packet_t r);
-        `ifdef DEBUG
-        $display ("RESULT MONITOR: resultA: 0x%0h",r);
-        `endif
+
         ap.write(r);
     endfunction : write_to_monitor
 
