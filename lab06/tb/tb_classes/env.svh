@@ -20,10 +20,6 @@ class env extends uvm_env;
 // testbench elements
 //------------------------------------------------------------------------------
 
-    // funct_tpgen tpgen_h;    
-    // coverage coverage_h;
-    // scoreboard scoreboard_h;
-    // monitor monitor_h;
 
     funct_tpgen tpgen_h;
     uvm_tlm_fifo #(command_s) command_f;
@@ -37,12 +33,6 @@ class env extends uvm_env;
 //------------------------------------------------------------------------------
 // build phase
 //------------------------------------------------------------------------------
-    // function void build_phase(uvm_phase phase);
-    //     tpgen_h      = funct_tpgen::type_id::create("tpgen_h",this);
-    //     coverage_h   = coverage::type_id::create ("coverage_h",this);
-    //     scoreboard_h = scoreboard::type_id::create("scoreboard_h",this);
-    //     monitor_h = monitor::type_id::create("monitor_h",this);
-    // endfunction : build_phase
 
     function void build_phase(uvm_phase phase);
         tpgen_h           = funct_tpgen::type_id::create("funct_tpgen",this);

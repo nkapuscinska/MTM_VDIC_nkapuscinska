@@ -112,7 +112,7 @@ endfunction
 
 `include "tb_classes/funct_tpgen.svh"
 `include "tb_classes/random_tpgen.svh"
-`include "tb_classes/bad_parity_tpgen.svh"
+
 
 `include "tb_classes/scoreboard.svh"
 `include "tb_classes/driver.svh"
@@ -122,5 +122,4 @@ endfunction
 
 `include "tb_classes/funct_test.svh"
 `include "tb_classes/random_test.svh"
-`include "tb_classes/bad_parity_test.svh"
 endpackage : fifomult_tb_pkg

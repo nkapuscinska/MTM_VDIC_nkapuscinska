@@ -249,6 +249,7 @@ XRUN_ARGS="\
   +nowarnRNDXCELON \
   +nowarnCOVEOS \
   +nowarnSAWSTP \
+  +nowarnNAGCST \
   -xmlibdirname $INCA \
   $GUI \
   +overwrite \
