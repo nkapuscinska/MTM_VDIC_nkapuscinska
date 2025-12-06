@@ -1,0 +1,24 @@
+module top;
+    import uvm_pkg::*;
+    `include "uvm_macros.svh"
+    import fifomult_tb_pkg::*;
+
+
+    switch_bfm bfm();
+
+    simple_switch_uart dut (
+    .clk    (bfm.clk),
+    .rst_n  (bfm.rst_n),
+    .prog   (bfm.prog),
+    .sin    (bfm.sin),
+    .sout0  (bfm.sout0),
+    .sout1  (bfm.sout1)
+    );
+    
+    initial begin
+        uvm_config_db #(virtual switch_bfm)::set(null, "*", "bfm", bfm);
+        run_test();
+    end
+    
+
+endmodule : top

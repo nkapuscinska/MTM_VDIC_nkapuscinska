@@ -1,0 +1,170 @@
+interface switch_bfm;
+import fifomult_tb_pkg::*; 
+   
+logic clk;
+logic rst_n;
+logic prog;
+bit sin;
+logic sout0;
+logic sout1;
+
+
+operation_t op_set;
+
+
+command_monitor command_monitor_h;
+result_monitor result_monitor_h; 
+
+
+
+    initial begin : clk_gen_blk
+        clk = 0;
+        rst_n = 1;
+        sin = 1;
+        prog = 0;
+        forever begin : clk_frv_blk
+            #10;
+            clk = ~clk;
+        end
+    end
+
+    initial begin
+        command_s cmd;
+        bit [7:0] shift_reg;
+        bit [3:0] bit_index;
+        automatic bit frame_phase = 0;
+        bit [7:0] received_address, received_data;
+        bit current_port;
+        automatic bit prev_sout0 = 1, prev_sout1 = 1;
+
+        // pkt, który złożymy i wyślemy do scoreboardu
+        uart_packet_t pkt;
+
+        
+        forever begin
+
+                @(negedge sout0 or negedge sout1);
+
+                if (cmd.op == bparity_op) begin
+                    result_monitor_h.write_to_monitor(pkt);
+                end
+                else begin
+                
+                    current_port = (sout1 == 0);
+                    shift_reg = 0;
+                    repeat(CLKS_PER_BIT/2) @(posedge clk);
+                    for (bit_index = 0; bit_index < 10; bit_index++) begin
+                        if (bit_index != 0 && bit_index != 9)
+                            shift_reg[bit_index-1] = (current_port == 1) ? sout1 : sout0;
+                        repeat(CLKS_PER_BIT) @(posedge clk);
+                    end
+
+                    if (frame_phase == 0) begin
+                        received_address = shift_reg;
+                        frame_phase = 1;
+                    end else begin
+                        received_data = shift_reg;
+                        frame_phase = 0;
+                        
+                        pkt = '{default: '0}; 
+                        pkt.adres_frame.data_bits = received_address;
+                        pkt.data_frame.data_bits   = received_data;
+                        pkt.port = current_port;
+
+                        
+                        result_monitor_h.write_to_monitor(pkt);
+                    end
+
+                    prev_sout0 = sout0;
+                    prev_sout1 = sout1;
+                end
+            end
+        end
+
+    task automatic send_uart_frame(
+
+        input uart_packet_t packet,
+        input operation_t op,
+        input bit force_parity_error = 0
+    );
+
+        command_s command;
+        uart_frame_t adres;
+        uart_frame_t data;
+        bit parity_bit_to_send;
+
+        command.op = op;
+        command.packet = packet;
+        command_monitor_h.write_to_monitor(command);
+
+
+
+        adres = packet.adres_frame;
+        data = packet.data_frame;
+
+        if(command.op == config_op) begin
+            address_map[adres.data_bits] = data.data_bits;
+        end
+
+        
+        sin = adres.start_bit;
+        repeat (CLKS_PER_BIT) @(posedge clk);
+
+        for (int i = 0; i < 8; i++) begin
+            sin = adres.data_bits[i];
+            repeat (CLKS_PER_BIT) @(posedge clk);
+        end
+
+        if (force_parity_error)
+            parity_bit_to_send = ~adres.parity_bit;
+        else
+            parity_bit_to_send = adres.parity_bit;
+
+        sin = parity_bit_to_send;
+        repeat (CLKS_PER_BIT) @(posedge clk);
+
+        sin = adres.stop_bit;
+        repeat (CLKS_PER_BIT) @(posedge clk);
+
+        // data send 
+        sin = data.start_bit;
+        repeat (CLKS_PER_BIT) @(posedge clk);
+
+        for (int i = 0; i < 8; i++) begin
+            sin = data.data_bits[i];
+            repeat (CLKS_PER_BIT) @(posedge clk);
+        end
+
+        if (force_parity_error)
+            parity_bit_to_send = ~data.parity_bit;
+        else
+            parity_bit_to_send = data.parity_bit;
+
+        sin = parity_bit_to_send;
+        repeat (CLKS_PER_BIT) @(posedge clk);
+
+        sin = data.stop_bit;
+        repeat (CLKS_PER_BIT) @(posedge clk);
+
+
+    endtask
+
+//------------------------------------------------------------------------------
+// write command monitor
+//------------------------------------------------------------------------------
+
+    task automatic reset();
+    begin
+        rst_n = 0;
+        $display("Applying reset...");
+        repeat (16) @(posedge clk); 
+        // -> ev_reset_test_start;
+        rst_n = 1;
+        repeat (16) @(posedge clk);   
+
+        // reset_scoreboard();
+    end
+    endtask
+    
+
+endinterface : switch_bfm
