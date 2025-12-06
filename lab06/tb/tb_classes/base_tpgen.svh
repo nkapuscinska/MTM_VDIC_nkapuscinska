@@ -131,7 +131,7 @@ virtual class base_tpgen extends uvm_component;
         end
         
 
-        repeat (256) begin : random_loop
+        repeat (5000) begin : random_loop
             
             command.op = func_op;
             command.packet = get_packet();

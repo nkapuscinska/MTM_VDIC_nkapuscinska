@@ -40,7 +40,7 @@ result_monitor result_monitor_h;
         
         forever begin
 
-                @(negedge bfm.sout0 or negedge bfm.sout1);
+                @(negedge sout0 or negedge sout1);
 
                 if (cmd.op == bparity_op) begin
                     result_monitor_h.write_to_monitor(pkt);
@@ -49,11 +49,11 @@ result_monitor result_monitor_h;
                 
                     current_port = (bfm.sout1 == 0);
                     shift_reg = 0;
-                    repeat(CLKS_PER_BIT/2) @(posedge bfm.clk);
+                    repeat(CLKS_PER_BIT/2) @(posedge clk);
                     for (bit_index = 0; bit_index < 10; bit_index++) begin
                         if (bit_index != 0 && bit_index != 9)
-                            shift_reg[bit_index-1] = (current_port == 1) ? bfm.sout1 : bfm.sout0;
-                        repeat(CLKS_PER_BIT) @(posedge bfm.clk);
+                            shift_reg[bit_index-1] = (current_port == 1) ? sout1 : sout0;
+                        repeat(CLKS_PER_BIT) @(posedge clk);
                     end
 
                     if (frame_phase == 0) begin
@@ -72,8 +72,8 @@ result_monitor result_monitor_h;
                         result_monitor_h.write_to_monitor(pkt);
                     end
 
-                    prev_sout0 = bfm.sout0;
-                    prev_sout1 = bfm.sout1;
+                    prev_sout0 = sout0;
+                    prev_sout1 = sout1;
                 end
             end
         end
