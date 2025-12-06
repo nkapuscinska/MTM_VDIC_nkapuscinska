@@ -124,10 +124,13 @@ virtual class base_tpgen extends uvm_component;
         command.op = rst_op;
         command_port.put(command);
 
+        #100;
+
         repeat (256) begin
             command.op = config_op;
             command.packet = generate_config_packets(); 
             command_port.put(command);
+            #10;
         end
         
 
