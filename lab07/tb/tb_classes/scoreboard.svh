@@ -1,22 +1,17 @@
-class scoreboard extends uvm_subscriber #(uart_packet_t);
+class scoreboard extends uvm_subscriber #(result_transaction);
     `uvm_component_utils(scoreboard)
 
+    uvm_tlm_analysis_fifo #(command_transaction) cmd_f;
 
-     uvm_tlm_analysis_fifo #(command_s) cmd_f; 
+    typedef enum bit { TEST_PASSED, TEST_FAILED } test_result_t;
+    local test_result_t tr = TEST_PASSED;
 
-
-//------------------------------------------------------------------------------
-
-
-    function new (string name, uvm_component parent);
+    //----------------------------------------------------------------------
+    function new(string name, uvm_component parent);
         super.new(name, parent);
     endfunction : new
 
-
-
-
-
-    function void set_print_color (print_color_t c);
+    function void set_print_color(print_color_t c);
         string ctl;
         case (c)
             COLOR_BOLD_BLACK_ON_GREEN : ctl  = "\033[1;30m\033[102m";
@@ -28,116 +23,78 @@ class scoreboard extends uvm_subscriber #(uart_packet_t);
         $write(ctl);
     endfunction
 
-    
-//------------------------------------------------------------------------------
-// build phase
-//------------------------------------------------------------------------------
+    //----------------------------------------------------------------------
     function void build_phase(uvm_phase phase);
         cmd_f = new("cmd_f", this);
     endfunction : build_phase
 
+    //----------------------------------------------------------------------
+    local function result_transaction predict_result(command_transaction cmd);
+        result_transaction predicted;
+        predicted = new("predicted");
 
-//------------------------------------------------------------------------------
-// run phase
-//------------------------------------------------------------------------------
+        predicted.packet.adres_frame = cmd.adres_frame;
+        predicted.packet.data_frame  = cmd.data_frame;
+        predicted.packet.port  = cmd.port;
+        predicted.op = cmd.op;
+        predicted.port = cmd.port;
 
+        return predicted;
+    endfunction
 
-
-
-    // task reset_scoreboard();
-    //     forever begin
-    //         @ (bfm.ev_reset_test_start);
-    //         $display("=== Starting RESET test ===");
-    //         repeat (3) @(posedge bfm.clk);
-    //         if (bfm.sout0 !== 1'b1 || bfm.sout1 !== 1'b1) begin
-    //             set_print_color(COLOR_BOLD_BLACK_ON_RED);
-    //             $display("RESET TEST → FAIL (sout0=%b, sout1=%b)", bfm.sout0, bfm.sout1);
-    //             set_print_color(COLOR_DEFAULT);
-    //         end else begin
-    //             set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
-    //             $display("RESET TEST → PASS (sout0=%b, sout1=%b)", bfm.sout0, bfm.sout1);
-    //             set_print_color(COLOR_DEFAULT);
-    //         end
-    //         set_print_color(COLOR_DEFAULT);
-    //     end
-    // endtask
-
-    // task bad_parity_monitor();
-    //     int obs_before;
-    //     forever begin
-    //         @ (bfm.ev_bad_parity_test_start);
-    //         obs_before = bfm.observed_q.size();
-
-    //         $display("=== Starting BAD PARITY test ===");
-
-    //         # (CLKS_PER_BIT * 20); //waiting for dut 
-    //         if (bfm.observed_q.size() > obs_before) begin
-    //             set_print_color(COLOR_BOLD_BLACK_ON_RED);
-    //             $display("FAIL: DUT forwarded bad parity frame");
-    //             set_print_color(COLOR_DEFAULT);
-    //         end else begin
-    //             set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
-    //             $display("PASS: DUT ignored bad parity frame");
-    //             set_print_color(COLOR_DEFAULT);
-    //         end
-    //         set_print_color(COLOR_DEFAULT);
-    //     end
-    // endtask
-
-    function void end_of_test();
-        if (test_result == TEST_PASSED) begin
-            set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
-            $display("TEST RESULT: PASS");
-            set_print_color(COLOR_DEFAULT);
-        end else begin
-            set_print_color(COLOR_BOLD_BLACK_ON_RED);
-            $display("TEST RESULT: FAIL");
-            set_print_color(COLOR_DEFAULT);
-        end
-    endfunction : end_of_test
-
-    //------------------------------------------------------------------------------
-// subscriber write function
-//------------------------------------------------------------------------------
-    function void write(uart_packet_t t);
-        shortint predicted_result;
-        command_s cmd;
-        
-        uart_packet_t exp;
-        uart_packet_t obs;
+    //----------------------------------------------------------------------
+    function void write(result_transaction t);
+        string data_str;
+        command_transaction cmd;
+        result_transaction predicted;
 
         do
             if (!cmd_f.try_get(cmd))
                 $fatal(1, "Missing command in self checker");
 
         while ((cmd.op == config_op)||(cmd.op == rst_op));
-        exp = cmd.packet;
-        obs = t;
 
-        $display("Scoreboard running... waiting for packets.");
+        predicted = predict_result(cmd);
 
-            if (t.data_frame.data_bits  ===  cmd.packet.data_frame.data_bits &&
-                obs.port    === address_map[exp.adres_frame.data_bits]) begin
-                set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
-                $display("[%0t] PASS addr=%0d exp_port=%0d obs_port=%0d exp_data=0x%0h obs_data=0x%0h",
-                         $time, obs.adres_frame.data_bits, address_map[exp.adres_frame.data_bits], obs.port, exp.data_frame.data_bits, obs.data_frame.data_bits);
-            end else begin
-                set_print_color(COLOR_BOLD_BLACK_ON_RED);
-                $display("[%0t] FAIL addr=%0d exp_port=%0d obs_port=%0d exp_data=0x%0h obs_data=0x%0h",
-                         $time, obs.adres_frame.data_bits, address_map[obs.adres_frame.data_bits], obs.port, exp.data_frame.data_bits, obs.data_frame.data_bits);
-            end
-            set_print_color(COLOR_DEFAULT);
+        // if(predicted.do_compare(t)) begin
+        //     set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
+        //     $display("[%0t] PASS: %s", $time, t.convert2string());
+        // end else begin
+        //     set_print_color(COLOR_BOLD_BLACK_ON_RED);
+        //     $display("[%0t] FAIL: %s / Expected: %s", 
+        //              $time, t.convert2string(), predicted.convert2string());
+        //     tr = TEST_FAILED;
+        // end
+        // set_print_color(COLOR_DEFAULT);
 
-    endfunction : write
+        data_str  = {"\n", cmd.convert2string(),
+            "\n ==>  Actual    " , t.convert2string(),
+            "\n ==>  Predicted ",predicted.convert2string(), "\n"};
 
-//-------------------------------
-//------------------------------------------------------------------------------
-// report phase
-//------------------------------------------------------------------------------
+        if (!predicted.compare(t)) begin
+            `uvm_error("SELF CHECKER", {"FAIL: ",data_str})
+            tr = TEST_FAILED;
+        end
+        else
+            `uvm_info("SELF CHECKER", {"PASS: ", data_str}, UVM_HIGH)
+    endfunction
+
+    //----------------------------------------------------------------------
+    function void end_of_test();
+        if(tr == TEST_PASSED) begin
+            set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
+            $display("TEST RESULT: PASS");
+        end else begin
+            set_print_color(COLOR_BOLD_BLACK_ON_RED);
+            $display("TEST RESULT: FAIL");
+        end
+        set_print_color(COLOR_DEFAULT);
+    endfunction
+
+    //----------------------------------------------------------------------
     function void report_phase(uvm_phase phase);
         super.report_phase(phase);
         end_of_test();
-    endfunction : report_phase
-
+    endfunction
 
 endclass : scoreboard

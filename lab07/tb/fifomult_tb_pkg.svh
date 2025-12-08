@@ -63,10 +63,8 @@ typedef enum {
 
 
 typedef bit [7:0] addr_t;
-typedef bit [7:0] port_t;
+typedef bit port_t;
 
-port_t temp;
-addr_t key;
 
 port_t address_map [bit [7:0]];
 
@@ -97,29 +95,29 @@ endfunction
 
 
 
-`include "tb_classes/coverage.svh"
 
 
 
-`include "tb_classes/base_tpgen.svh"
+//------------------------------------------------------------------------------
+// testbench classes
+//------------------------------------------------------------------------------
 
+`include "command_transaction.svh"
+`include "funct_transaction.svh"
+`include "result_transaction.svh"
+`include "coverage.svh"
+`include "tpgen.svh"
+`include "scoreboard.svh"
+`include "driver.svh"
+`include "command_monitor.svh"
+`include "result_monitor.svh"
+`include "env.svh"
 
 //------------------------------------------------------------------------------
 // test classes
 //------------------------------------------------------------------------------
+`include "random_test.svh"
+`include "funct_test.svh"
 
 
-
-`include "tb_classes/funct_tpgen.svh"
-`include "tb_classes/random_tpgen.svh"
-
-
-`include "tb_classes/scoreboard.svh"
-`include "tb_classes/driver.svh"
-`include "tb_classes/result_monitor.svh" 
-`include "tb_classes/command_monitor.svh" 
-`include "tb_classes/env.svh"
-
-`include "tb_classes/funct_test.svh"
-`include "tb_classes/random_test.svh"
 endpackage : fifomult_tb_pkg

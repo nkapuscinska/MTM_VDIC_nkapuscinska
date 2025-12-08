@@ -1,8 +1,11 @@
-class coverage extends uvm_subscriber #(command_s);
+class coverage extends uvm_subscriber #(command_transaction);
     `uvm_component_utils(coverage)
 
 
     operation_t op;
+    byte unsigned addr_cov;
+    byte unsigned data_cov;
+    bit unsigned port_cov;
 //------------------------------------------------------------------------------
 // covergroups
 //------------------------------------------------------------------------------
@@ -49,9 +52,11 @@ class coverage extends uvm_subscriber #(command_s);
 //------------------------------------------------------------------------------
 // subscriber write function
 //------------------------------------------------------------------------------
-    function void write(command_s t);
-        
-        op = t.op;
+    function void write(command_transaction t);
+    
+        addr_cov = t.adres_frame.data_bits;
+        data_cov = t.data_frame.data_bits;
+        port_cov = t.port;
         op_adres.sample();
         op_data.sample();
 

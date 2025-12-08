@@ -1,26 +1,69 @@
-//------------------------------------------------------------------------------
-// RESULT MONITOR - obserwacja wyjść DUT + reset
-//------------------------------------------------------------------------------ 
+/*
+ Copyright 2013 Ray Salemi
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
 class result_monitor extends uvm_component;
     `uvm_component_utils(result_monitor)
 
-    protected virtual switch_bfm bfm;
-    uvm_analysis_port #(uart_packet_t) ap; // teraz wysyłamy uart_packet_t
+//------------------------------------------------------------------------------
+// local variables
+//------------------------------------------------------------------------------
 
-    function new(string name, uvm_component parent);
-        super.new(name,parent);
-        ap   = new("ap", this);
-    endfunction
+    protected virtual switch_bfm bfm;
+    uvm_analysis_port #(result_transaction) ap;
+
+//------------------------------------------------------------------------------
+// constructor
+//------------------------------------------------------------------------------
+
+    function new (string name, uvm_component parent);
+        super.new(name, parent);
+    endfunction : new
+
+//------------------------------------------------------------------------------
+// build phase
+//------------------------------------------------------------------------------
 
     function void build_phase(uvm_phase phase);
         if(!uvm_config_db #(virtual switch_bfm)::get(null, "*","bfm", bfm))
-            $fatal(1,"Failed to get BFM");
+            `uvm_fatal("RESULT MONITOR", "Failed to get BFM")
+
         bfm.result_monitor_h = this;
-    endfunction
+        ap                   = new("ap",this);
+    endfunction : build_phase
+
+//------------------------------------------------------------------------------
+// access function for BFM
+//------------------------------------------------------------------------------
+    // this variable is defined here as static for that you can see it in the
+    // Simvision waveforms.
+    // static result_transaction result_t;
 
     function void write_to_monitor(uart_packet_t r);
-
-        ap.write(r);
+        result_transaction result_t;
+        result_t        = new("result_t");
+        result_t.packet = r;
+        result_t.port = r.port;
+        result_t.op = func_op;
+        ap.write(result_t);
     endfunction : write_to_monitor
 
+
 endclass : result_monitor
+
+
+
+
+
+

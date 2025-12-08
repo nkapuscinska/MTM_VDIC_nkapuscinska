@@ -20,7 +20,7 @@ class command_monitor extends uvm_component;
 // local variables
 //------------------------------------------------------------------------------
     protected virtual switch_bfm bfm;
-    uvm_analysis_port #(command_s) ap;
+    uvm_analysis_port #(command_transaction) ap;
 
 //------------------------------------------------------------------------------
 // constructor
@@ -35,7 +35,13 @@ class command_monitor extends uvm_component;
     function void write_to_monitor(command_s cmd);
 
         //$display("COMMAND MONITOR %d, %d, %h", cmd.op, cmd.packet.adres_frame.data_bits, cmd.packet.data_frame.data_bits);
-        ap.write(cmd);
+        command_transaction t;
+        t    = new("t_cmd");
+        t.op = cmd.op;
+        t.port = cmd.packet.port;
+        t.data_frame = cmd.packet.data_frame;
+        t.adres_frame = cmd.packet.adres_frame;
+        ap.write(t);
     endfunction : write_to_monitor
 
 //------------------------------------------------------------------------------

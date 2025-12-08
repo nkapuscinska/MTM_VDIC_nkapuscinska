@@ -20,7 +20,7 @@
 
 #------------------------------------------------------------------------------
 # The list of tests; in GUI mode only the first test is started.
-TESTS=(funct_test random_test);
+TESTS=(random_test funct_test);
 # TESTS=(funct_test);
 #------------------------------------------------------------------------------
 # Default .f file
@@ -173,19 +173,23 @@ function check_uvm_fatal() { #<<<
   echo "CHECKING LOG FILE: $logfile"
   if [[ $(egrep  -c "^UVM_FATAL *: *[123456789]" $logfile) != "0" ]]; then
     echo -e "Simulation $FAILED with UVM_FATAL";
+    return 0
     #exit -1
   fi
   if [[ $(egrep  -c "^UVM_ERROR *: *[123456789]" $logfile) != "0" ]]; then
     echo -e "Simulation $FAILED with UVM_ERROR";
     #exit -1
+    return 0
   fi
   if [[ $(egrep  -c "\bERROR\b" $logfile) != "0" ]]; then
     echo -e "Simulation $FAILED with ERROR in the log file.";
     #exit -1
+    return 0
   fi
   if [[ $(egrep  -c '*F,NOLICN' $logfile) != "0" ]]; then
     echo -e "Simulation $FAILED - license error.";
     #exit -1
+    return 0
   fi
 } #>>>
 #------------------------------------------------------------------------------
@@ -227,6 +231,7 @@ which xrun >> /dev/null 2>&1
 if [[ "$?" != "0" ]]; then
   echo ERROR: xrun simulator not found. Execute the command:
   echo source $XCELIUM_CONFIG
+  return 0
   #exit -1
 fi
 #>>>
@@ -251,6 +256,9 @@ XRUN_ARGS="\
   +nowarnSAWSTP \
   +nowarnDLCVAR \
   +nowarnNAGCST \
+  +nowarnCOVEOS \
+  +nowarnSPDUSD \
+  +nowarnTIMESCALE \
   -xmlibdirname $INCA \
   $GUI \
   +overwrite \

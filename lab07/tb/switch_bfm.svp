@@ -47,6 +47,7 @@ result_monitor result_monitor_h;
 
                 if (cmd.op == bparity_op) begin
                     result_monitor_h.write_to_monitor(pkt);
+                    $display("SWITCH_BFM", "Dotarliśmy tu gdzie diabeł mówi dobranoc.");
                 end
                 else begin
                 
@@ -67,10 +68,14 @@ result_monitor result_monitor_h;
                         frame_phase = 0;
                         
                         pkt = '{default: '0}; 
-                        pkt.adres_frame.data_bits = received_address;
-                        pkt.data_frame.data_bits   = received_data;
+                        pkt.adres_frame = '{start_bit: 0, data_bits: received_address, parity_bit: ^received_address, stop_bit: 1};
+                        pkt.data_frame  = '{start_bit: 0, data_bits: received_data, parity_bit: ^received_data, stop_bit: 1};
+                        //pkt.adres_frame.data_bits = received_address;
+                        //pkt.data_frame.data_bits   = received_data;
                         pkt.port = current_port;
 
+                        // $display("RECV -> addr: 0x%h, data: 0x%h, port: 0x%h", 
+                        // pkt.adres_frame.data_bits, pkt.data_frame.data_bits, pkt.port);
                         
                         result_monitor_h.write_to_monitor(pkt);
                     end
@@ -93,20 +98,30 @@ result_monitor result_monitor_h;
         uart_frame_t data;
         bit parity_bit_to_send;
 
-        command.op = op;
-        command.packet = packet;
-        command_monitor_h.write_to_monitor(command);
-
-
 
         adres = packet.adres_frame;
         data = packet.data_frame;
 
-        if(command.op == config_op) begin
-            address_map[adres.data_bits] = data.data_bits;
+        if(op == config_op) begin
+            // $display("Configuring address map: addr 0x%h -> port 0x%h", 
+                    //  adres.data_bits, data.data_bits);
+            address_map[adres.data_bits] = data.data_bits[0];
+            // $display("Addr map row: 0x%h stores port 0x%h", 
+                     // adres.data_bits, address_map[adres.data_bits]);
+        end else begin
+            // $display("Using address map to determine port for addr 0x%h -> port: 0x%h", 
+            //          adres.data_bits, address_map[adres.data_bits]);
+            packet.port = address_map[adres.data_bits];
         end
 
-        
+        command.op = op;
+        command.packet = packet;
+
+        // $display("SEND -> addr: 0x%h, data: 0x%h, port: 0x%h", 
+                //  adres.data_bits, data.data_bits, command.packet.port);
+
+        command_monitor_h.write_to_monitor(command);
+
         sin = adres.start_bit;
         repeat (CLKS_PER_BIT) @(posedge clk);
 
@@ -150,7 +165,7 @@ result_monitor result_monitor_h;
     endtask
 
 //------------------------------------------------------------------------------
-// write command monitor
+// reset
 //------------------------------------------------------------------------------
 
     task automatic reset();

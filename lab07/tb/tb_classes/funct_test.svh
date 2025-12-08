@@ -13,13 +13,8 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-class funct_test extends uvm_test;
+class funct_test extends random_test;
     `uvm_component_utils(funct_test)
-
-//------------------------------------------------------------------------------
-// local variables
-//------------------------------------------------------------------------------
-    env env_h;
 
 //------------------------------------------------------------------------------
 // constructor
@@ -31,20 +26,11 @@ class funct_test extends uvm_test;
 //------------------------------------------------------------------------------
 // build phase
 //------------------------------------------------------------------------------
+
     function void build_phase(uvm_phase phase);
-        env_h = env::type_id::create("env_h",this);
+        super.build_phase(phase);
+        command_transaction::type_id::set_type_override(funct_transaction::get_type());
     endfunction : build_phase
-
-//------------------------------------------------------------------------------
-// build phase
-//------------------------------------------------------------------------------
-
-    virtual function void start_of_simulation_phase(uvm_phase phase);
-        super.start_of_simulation_phase(phase);
-        // Print the test topology
-        uvm_top.print_topology();
-    endfunction : start_of_simulation_phase
-
 
 endclass
 
