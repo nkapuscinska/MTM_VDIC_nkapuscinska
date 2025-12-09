@@ -13,25 +13,23 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-class add_test extends random_test;
-    `uvm_component_utils(add_test)
+class add_transaction extends command_transaction;
+    `uvm_object_utils(add_transaction)
+
+//------------------------------------------------------------------------------
+// constraints
+//------------------------------------------------------------------------------
+
+    constraint add_only {op == add_op;}
 
 //------------------------------------------------------------------------------
 // constructor
 //------------------------------------------------------------------------------
 
-    function new (string name, uvm_component parent);
-        super.new(name,parent);
-    endfunction : new
+    function new(string name="");
+        super.new(name);
+    endfunction
 
-//------------------------------------------------------------------------------
-// build phase
-//------------------------------------------------------------------------------
-
-    function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        command_transaction::type_id::set_type_override(add_transaction::get_type());
-    endfunction : build_phase
+endclass : add_transaction
 
 
-endclass

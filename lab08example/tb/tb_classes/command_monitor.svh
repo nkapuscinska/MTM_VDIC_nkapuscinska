@@ -13,14 +13,15 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-class random_test extends uvm_test;
-    `uvm_component_utils(random_test)
+class command_monitor extends uvm_component;
+    `uvm_component_utils(command_monitor)
 
 //------------------------------------------------------------------------------
-// env
+// local variables
 //------------------------------------------------------------------------------
 
-    env env_h;
+    protected virtual tinyalu_bfm bfm;
+    uvm_analysis_port #(command_transaction) ap;
 
 //------------------------------------------------------------------------------
 // constructor
@@ -28,35 +29,43 @@ class random_test extends uvm_test;
 
     function new (string name, uvm_component parent);
         super.new(name,parent);
-    endfunction : new
+    endfunction
 
 //------------------------------------------------------------------------------
 // build phase
 //------------------------------------------------------------------------------
 
     function void build_phase(uvm_phase phase);
-        env_h = env::type_id::create("env",this);
+
+        tinyalu_agent_config agent_config_h;
+
+        // get the BFM
+        if(!uvm_config_db #(tinyalu_agent_config)::get(this, "","config", agent_config_h))
+            `uvm_fatal("COMMAND MONITOR", "Failed to get CONFIG");
+
+        // pass the command_monitor handler to the BFM
+        agent_config_h.bfm.command_monitor_h = this;
+
+        ap                                           = new("ap",this);
     endfunction : build_phase
 
 //------------------------------------------------------------------------------
-// end-of-elaboration phase
+// access function for BMF
 //------------------------------------------------------------------------------
 
-    function void end_of_elaboration_phase(uvm_phase phase);
-        command_transaction tmp;               // transaction object to check the type generated
+    function void write_to_monitor(byte A, byte B, operation_t op);
+        command_transaction cmd;
+        `uvm_info("COMMAND MONITOR",$sformatf("MONITOR: A: %2h  B: %2h  op: %s",
+                A, B, op.name()), UVM_HIGH);
+        cmd    = new("cmd");
+        cmd.A  = A;
+        cmd.B  = B;
+        cmd.op = op;
+        ap.write(cmd);
+    endfunction : write_to_monitor
 
-        // other printers available:
-        // - uvm_default_line_printer
-        // - uvm_default_tree_printer
-        set_print_color(COLOR_BLUE_ON_WHITE);
-        this.print(uvm_default_table_printer); // print test env topology
-        set_print_color(COLOR_DEFAULT);
 
-        // printing the type of the transaction generated
-        tmp = command_transaction::type_id::create("command_transaction", this);
-        set_print_color(COLOR_BOLD_BLACK_ON_YELLOW);
-        `uvm_info("COMMAND TRANSACTION", tmp.get_type_name(), UVM_NONE)
-        set_print_color(COLOR_DEFAULT);
-    endfunction : end_of_elaboration_phase
 
-endclass
+endclass : command_monitor
+
+

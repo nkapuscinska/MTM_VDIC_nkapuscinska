@@ -13,24 +13,23 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-class add_transaction extends command_transaction;
-    `uvm_object_utils(add_transaction)
+class env_config;
 
 //------------------------------------------------------------------------------
-// constraints
+// configuration variables
 //------------------------------------------------------------------------------
 
-    constraint add_only {op == add_op;}
+    virtual tinyalu_bfm class_bfm;
+    virtual tinyalu_bfm module_bfm;
 
 //------------------------------------------------------------------------------
 // constructor
 //------------------------------------------------------------------------------
 
-    function new(string name="");
-        super.new(name);
-    endfunction
-    
-    
-endclass : add_transaction
+    function new(virtual tinyalu_bfm class_bfm, virtual tinyalu_bfm module_bfm);
+        this.class_bfm  = class_bfm;
+        this.module_bfm = module_bfm;
+    endfunction : new
 
+endclass : env_config
 

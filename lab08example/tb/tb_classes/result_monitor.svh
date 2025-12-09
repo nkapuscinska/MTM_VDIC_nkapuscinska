@@ -13,55 +13,58 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-class command_monitor extends uvm_component;
-    `uvm_component_utils(command_monitor)
+class result_monitor extends uvm_component;
+    `uvm_component_utils(result_monitor)
 
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
 
     protected virtual tinyalu_bfm bfm;
-    uvm_analysis_port #(command_transaction) ap;
+    uvm_analysis_port #(result_transaction) ap;
 
 //------------------------------------------------------------------------------
 // constructor
 //------------------------------------------------------------------------------
 
     function new (string name, uvm_component parent);
-        super.new(name,parent);
+        super.new(name, parent);
     endfunction : new
 
 //------------------------------------------------------------------------------
 // build phase
 //------------------------------------------------------------------------------
-
+	
     function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(virtual tinyalu_bfm)::get(null, "*","bfm", bfm))
-            `uvm_fatal("COMMAND MONITOR", "Failed to get BFM")
-        bfm.command_monitor_h = this;
-        ap                    = new("ap",this);
+	
+		
+        // get the bfm 
+        tinyalu_agent_config agent_config_h;
+        if(!uvm_config_db #(tinyalu_agent_config)::get(this, "","config", agent_config_h))
+            `uvm_fatal("RESULT MONITOR", "Failed to get CONFIG");
+
+        // pass the result_monitor handler to the BFM
+        agent_config_h.bfm.result_monitor_h = this;
+		
+        ap = new("ap",this);
+		
     endfunction : build_phase
 
 //------------------------------------------------------------------------------
-// access function for BMF
+// access function for BFM
 //------------------------------------------------------------------------------
-    // this variable is defined here as static for that you can see it in the
-    // Simvision waveforms.
-    static command_transaction cmd;
-
-    function void write_to_monitor(byte A, byte B, operation_t op);
-//        command_transaction cmd;
-        `uvm_info("COMMAND MONITOR",$sformatf("MONITOR: A: %2h  B: %2h  op: %s",
-                A, B, op.name()), UVM_HIGH);
-        cmd    = new("cmd");
-        cmd.A  = A;
-        cmd.B  = B;
-        cmd.op = op;
-        ap.write(cmd);
+	
+    function void write_to_monitor(shortint r);
+        result_transaction result_t;
+        result_t        = new("result_t");
+        result_t.result = r;
+        ap.write(result_t);
     endfunction : write_to_monitor
-    
-    
-    
-endclass : command_monitor
+
+endclass : result_monitor
+
+
+
+
 
 

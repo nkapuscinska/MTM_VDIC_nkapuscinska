@@ -13,12 +13,13 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
+import tinyalu_tb_pkg::*;
 
 //------------------------------------------------------------------------------
 // the interface
 //------------------------------------------------------------------------------
 
-interface tinyalu_bfm import tinyalu_tb_pkg::*; ;
+interface tinyalu_bfm;
 
 //------------------------------------------------------------------------------
 // dut connections

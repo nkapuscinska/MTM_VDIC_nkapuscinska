@@ -126,9 +126,12 @@ class scoreboard extends uvm_subscriber #(result_transaction);
 
     function void report_phase(uvm_phase phase);
         super.report_phase(phase);
+        `uvm_info("SELF CHECKTER", "Reporting test result below", UVM_LOW)
         print_test_result(tr);
     endfunction : report_phase
 
 
 
 endclass : scoreboard
+
+

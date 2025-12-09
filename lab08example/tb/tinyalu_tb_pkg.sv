@@ -67,22 +67,27 @@ package tinyalu_tb_pkg;
 // testbench classes
 //------------------------------------------------------------------------------
 
+// configs
+`include "env_config.svh"
+`include "tinyalu_agent_config.svh"
+
+// transactions
 `include "command_transaction.svh"
 `include "add_transaction.svh"
 `include "result_transaction.svh"
+
+// testbench components
 `include "coverage.svh"
 `include "tpgen.svh"
 `include "scoreboard.svh"
 `include "driver.svh"
 `include "command_monitor.svh"
 `include "result_monitor.svh"
+`include "tinyalu_agent.svh"
 `include "env.svh"
 
-//------------------------------------------------------------------------------
-// test classes
-//------------------------------------------------------------------------------
+// tests
+`include "dual_test.svh"
 
-`include "random_test.svh"
-`include "add_test.svh"
 
 endpackage : tinyalu_tb_pkg

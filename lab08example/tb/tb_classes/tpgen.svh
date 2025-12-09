@@ -13,15 +13,14 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  */
-class result_monitor extends uvm_component;
-    `uvm_component_utils(result_monitor)
+class tpgen extends uvm_component;
+    `uvm_component_utils (tpgen)
 
 //------------------------------------------------------------------------------
 // local variables
 //------------------------------------------------------------------------------
 
-    protected virtual tinyalu_bfm bfm;
-    uvm_analysis_port #(result_transaction) ap;
+    uvm_put_port #(command_transaction) command_port;
 
 //------------------------------------------------------------------------------
 // constructor
@@ -31,37 +30,44 @@ class result_monitor extends uvm_component;
         super.new(name, parent);
     endfunction : new
 
-//------------------------------------------------------------------------------
-// build phase
-//------------------------------------------------------------------------------
-
     function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(virtual tinyalu_bfm)::get(null, "*","bfm", bfm))
-            `uvm_fatal("RESULT MONITOR", "Failed to get BFM")
-
-        bfm.result_monitor_h = this;
-        ap                   = new("ap",this);
+        command_port = new("command_port", this);
     endfunction : build_phase
 
 //------------------------------------------------------------------------------
-// access function for BFM
+// run phase
 //------------------------------------------------------------------------------
-    // this variable is defined here as static for that you can see it in the
-    // Simvision waveforms.
-    static result_transaction result_t;
+    static command_transaction command;
 
-    function void write_to_monitor(shortint r);
-//        result_transaction result_t;
-        result_t        = new("result_t");
-        result_t.result = r;
-        ap.write(result_t);
-    endfunction : write_to_monitor
+    task run_phase(uvm_phase phase);
+//        command_transaction command;
+
+        phase.raise_objection(this);
+
+        command    = new("command");
+        command.op = rst_op;
+        command_port.put(command);
+
+        command    = command_transaction::type_id::create("command");
+
+        set_print_color(COLOR_BOLD_BLACK_ON_YELLOW);
+        `uvm_info("TPGEN", $sformatf("*** Created transaction type: %s",command.get_type_name()), UVM_MEDIUM);
+        set_print_color(COLOR_DEFAULT);
+
+        repeat (10000) begin
+            assert(command.randomize());
+            command_port.put(command);
+        end
+
+        command    = new("command");
+        command.op = mul_op;
+        command.A  = 8'hFF;
+        command.B  = 8'hFF;
+        command_port.put(command);
+
+        #500;
+        phase.drop_objection(this);
+    endtask : run_phase
 
 
-endclass : result_monitor
-
-
-
-
-
-
+endclass : tpgen
