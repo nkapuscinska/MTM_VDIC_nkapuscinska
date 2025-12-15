@@ -23,6 +23,28 @@ class scoreboard extends uvm_subscriber #(result_transaction);
         $write(ctl);
     endfunction
 
+    //------------------------------------------------------------------------------
+// print the PASSED/FAILED in color
+//------------------------------------------------------------------------------
+    local function void print_test_result (test_result_t r);
+        if(tr == TEST_PASSED) begin
+            set_print_color(COLOR_BOLD_BLACK_ON_GREEN);
+            $write ("-----------------------------------\n");
+            $write ("----------- Test PASSED -----------\n");
+            $write ("-----------------------------------");
+            set_print_color(COLOR_DEFAULT);
+            $write ("\n");
+        end
+        else begin
+            set_print_color(COLOR_BOLD_BLACK_ON_RED);
+            $write ("-----------------------------------\n");
+            $write ("----------- Test FAILED -----------\n");
+            $write ("-----------------------------------");
+            set_print_color(COLOR_DEFAULT);
+            $write ("\n");
+        end
+    endfunction
+
     //----------------------------------------------------------------------
     function void build_phase(uvm_phase phase);
         cmd_f = new("cmd_f", this);
@@ -94,7 +116,8 @@ class scoreboard extends uvm_subscriber #(result_transaction);
     //----------------------------------------------------------------------
     function void report_phase(uvm_phase phase);
         super.report_phase(phase);
-        end_of_test();
-    endfunction
+        `uvm_info("SELF CHECKTER", "Reporting test result below", UVM_NONE)
+        print_test_result(tr);
+    endfunction : report_phase
 
 endclass : scoreboard

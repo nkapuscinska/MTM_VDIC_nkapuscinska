@@ -17,11 +17,14 @@ class driver extends uvm_component;
 //------------------------------------------------------------------------------
 // build phase
 //------------------------------------------------------------------------------
-    function void build_phase(uvm_phase phase);
-        if(!uvm_config_db #(virtual switch_bfm)::get(null, "*","bfm", bfm))
-            $fatal(1, "Failed to get BFM");
-        command_port = new("command_port",this);
-    endfunction : build_phase
+   function void build_phase(uvm_phase phase);
+      switch_agent_config switch_agent_config_h;
+      if(!uvm_config_db #(switch_agent_config)::get(this, "","config", switch_agent_config_h))
+        `uvm_fatal("DRIVER", "Failed to get config");
+      bfm = switch_agent_config_h.bfm;
+      command_port = new("command_port",this);
+   endfunction : build_phase
+
     
     function void send_uart_packet(input uart_packet_t packet);
     // wysterowuje bfma

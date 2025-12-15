@@ -29,28 +29,37 @@ class result_transaction extends uvm_transaction;
     function new(string name = "");
         super.new(name);
     endfunction : new
+//------------------------------------------------------------------------------
+// transaction functions: do_copy, do_compare, convert2string
+//------------------------------------------------------------------------------
+
+    extern function void do_copy(uvm_object rhs);
+    extern function bit do_compare(uvm_object rhs, uvm_comparer comparer);
+    extern function string convert2string();
+
+endclass : result_transaction
 
 //------------------------------------------------------------------------------
 // transaction methods - do_copy, convert2string, do_compare
 //------------------------------------------------------------------------------
 
-function void do_copy(uvm_object rhs);
+function void result_transaction::do_copy(uvm_object rhs);
     result_transaction copied_transaction_h;
     assert(rhs != null) else
-        `uvm_fatal("RESULT_TRANSACTION","Tried to copy null transaction");
-    
+        $fatal(1,"Tried to copy null transaction");
     super.do_copy(rhs);
-    assert($cast(copied_transaction_h, rhs)) else
-        `uvm_fatal("RESULT_TRANSACTION","Failed cast in do_copy");
-    
+    assert($cast(copied_transaction_h,rhs)) else
+        $fatal(1,"Faied cast in do_copy");
+            
     // kopiowanie wszystkich pól
     packet   = copied_transaction_h.packet;
     op    = copied_transaction_h.op;
     port   = copied_transaction_h.port;
+
 endfunction
 
 
-function string convert2string();
+function string result_transaction::convert2string();
     string s;
     s = $sformatf(
         "op=%0s, addr=0x%0h, data=0x%0h, port=0x%0h -- packet{adres_frame.start_bit=0x%h, adres_frame.data_bits=0x%h, adres_frame.parity_bit=0x%h, adres_frame.stop_bit=0x%h, data_frame.start_bit=0x%h, data_frame.data_bits=0x%h, data_frame.parity_bit=0x%h, data_frame.stop_bit=0x%h, port=0x%h}",
@@ -59,22 +68,19 @@ function string convert2string();
     return s;
 endfunction
 
-function bit do_compare(uvm_object rhs, uvm_comparer comparer);
-    result_transaction RHS;
+function bit result_transaction::do_compare(uvm_object rhs, uvm_comparer comparer);
+    result_transaction compared_transaction_h;
     bit same;
-    assert(rhs != null) else
-        `uvm_fatal("RESULT_TRANSACTION","Tried to compare null transaction");
 
-    same = super.do_compare(rhs, comparer);
-    $cast(RHS, rhs);
+    if (rhs==null) `uvm_fatal("RESULT TRANSACTION",
+            "Tried to do comparison to a null pointer");
 
-    same = (packet == RHS.packet) &&
-            (port == RHS.port) &&
-           same;
-
+    if (!$cast(compared_transaction_h,rhs))
+        same = 0;
+    else
+        same = super.do_compare(rhs, comparer) &&
+        (compared_transaction_h.packet == packet) &&
+        (compared_transaction_h.port == port);
     return same;
 endfunction
 
-
-
-endclass : result_transaction

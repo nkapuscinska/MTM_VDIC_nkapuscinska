@@ -47,14 +47,20 @@ class command_monitor extends uvm_component;
 //------------------------------------------------------------------------------
 // build phase
 //------------------------------------------------------------------------------
-    function void build_phase(uvm_phase phase);
+   function void build_phase(uvm_phase phase);
 
-        if(!uvm_config_db #(virtual switch_bfm)::get(null, "*","bfm", bfm))
-            $fatal(1, "Failed to get BFM");
+        switch_agent_config agent_config_h;
 
-        bfm.command_monitor_h = this;
-        ap                    = new("ap",this);
+        // get the BFM
+        if(!uvm_config_db #(switch_agent_config)::get(this, "","config", agent_config_h))
+            `uvm_fatal("COMMAND MONITOR", "Failed to get CONFIG");
+
+        // pass the command_monitor handler to the BFM
+        agent_config_h.bfm.command_monitor_h = this;
+
+        ap                                           = new("ap",this);
     endfunction : build_phase
+
 
 endclass : command_monitor
 

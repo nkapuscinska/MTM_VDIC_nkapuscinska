@@ -66,7 +66,7 @@ typedef bit [7:0] addr_t;
 typedef bit port_t;
 
 
-port_t address_map [bit [7:0]];
+
 
 
 //------------------------------------------------------------------------------
@@ -102,22 +102,28 @@ endfunction
 // testbench classes
 //------------------------------------------------------------------------------
 
+// configs
+`include "env_config.svh"
+`include "switch_agent_config.svh"
+
+// transactions
 `include "command_transaction.svh"
 `include "funct_transaction.svh"
 `include "result_transaction.svh"
+
+// testbench components
 `include "coverage.svh"
 `include "tpgen.svh"
 `include "scoreboard.svh"
 `include "driver.svh"
 `include "command_monitor.svh"
 `include "result_monitor.svh"
+`include "switch_agent.svh"
 `include "env.svh"
 
-//------------------------------------------------------------------------------
-// test classes
-//------------------------------------------------------------------------------
-`include "random_test.svh"
-`include "funct_test.svh"
+// tests
+`include "dual_test.svh"
+
 
 
 endpackage : fifomult_tb_pkg

@@ -88,7 +88,7 @@ class tpgen extends uvm_component;
         
 
             // generowanie portu losowego
-            port = byte'($urandom_range(0, 1));
+            port = {$urandom_range(0, 1)}[7:0];
 
             // tworzenie pakietu programowania
             pkt.adres_frame = create_uart_frame(i);
@@ -120,6 +120,7 @@ class tpgen extends uvm_component;
 
         #100;
         command    = command_transaction::type_id::create("command");
+
 
         repeat (256) begin
             command    = new("command");

@@ -20,7 +20,7 @@
 
 #------------------------------------------------------------------------------
 # The list of tests; in GUI mode only the first test is started.
-TESTS=(random_test funct_test);
+TESTS=(dual_test);
 # TESTS=(funct_test);
 #------------------------------------------------------------------------------
 # Default .f file

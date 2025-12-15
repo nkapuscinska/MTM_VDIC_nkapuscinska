@@ -3,22 +3,39 @@ module top;
     import fifomult_tb_pkg::*;
     `include "uvm_macros.svh"
 
+    switch_bfm module_bfm();
 
-    switch_bfm bfm();
-
-    simple_switch_uart dut (
-    .clk    (bfm.clk),
-    .rst_n  (bfm.rst_n),
-    .prog   (bfm.prog),
-    .sin    (bfm.sin),
-    .sout0  (bfm.sout0),
-    .sout1  (bfm.sout1)
+    simple_switch_uart module_dut (
+    .clk    (module_bfm.clk),
+    .rst_n  (module_bfm.rst_n),
+    .prog   (module_bfm.prog),
+    .sin    (module_bfm.sin),
+    .sout0  (module_bfm.sout0),
+    .sout1  (module_bfm.sout1)
     );
     
+    switch_bfm class_bfm();
+
+    simple_switch_uart class_dut (
+    .clk    (class_bfm.clk),
+    .rst_n  (class_bfm.rst_n),
+    .prog   (class_bfm.prog),
+    .sin    (class_bfm.sin),
+    .sout0  (class_bfm.sout0),
+    .sout1  (class_bfm.sout1)
+    );
+
+
+
+
+    // stimulus generator for module_dut
+    switch_tpgen_module stim_module(module_bfm);
+
     initial begin
-        uvm_config_db #(virtual switch_bfm)::set(null, "*", "bfm", bfm);
-        run_test();
+        uvm_config_db #(virtual switch_bfm)::set(null, "*", "class_bfm", class_bfm);
+        uvm_config_db #(virtual switch_bfm)::set(null, "*", "module_bfm", module_bfm);
+        run_test("dual_test");
     end
-    
+
 
 endmodule : top

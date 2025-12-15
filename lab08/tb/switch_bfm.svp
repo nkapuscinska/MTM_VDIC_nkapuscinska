@@ -15,7 +15,7 @@ operation_t op_set;
 command_monitor command_monitor_h;
 result_monitor result_monitor_h; 
 
-
+port_t address_map [bit [7:0]];
 
     initial begin : clk_gen_blk
         clk = 0;
@@ -47,7 +47,6 @@ result_monitor result_monitor_h;
 
                 if (cmd.op == bparity_op) begin
                     result_monitor_h.write_to_monitor(pkt);
-                    $display("SWITCH_BFM", "Dotarliśmy tu gdzie diabeł mówi dobranoc.");
                 end
                 else begin
                 
@@ -104,10 +103,10 @@ result_monitor result_monitor_h;
 
         if(op == config_op) begin
             // $display("Configuring address map: addr 0x%h -> port 0x%h", 
-                    //  adres.data_bits, data.data_bits);
+            //          adres.data_bits, data.data_bits);
             address_map[adres.data_bits] = data.data_bits[0];
             // $display("Addr map row: 0x%h stores port 0x%h", 
-                     // adres.data_bits, address_map[adres.data_bits]);
+            //          adres.data_bits, address_map[adres.data_bits]);
         end else begin
             // $display("Using address map to determine port for addr 0x%h -> port: 0x%h", 
             //          adres.data_bits, address_map[adres.data_bits]);

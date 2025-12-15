@@ -1,0 +1,12 @@
+//
+// File created by:  xrun
+// Do not modify this file
+//
+/home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab08example/tb/tinyalu_tb_pkg.sv
+/home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab08example/tb/tinyalu_tpgen_module.sv
+/home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab08example/tb/tinyalu_bfm.sv
+/home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/common/tinyalu/tinyalu_pkg.sv
+/home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/common/tinyalu/single_cycle.sv
+/home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/common/tinyalu/three_cycle.sv
+/home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/common/tinyalu/tinyalu.sv
+/home/student/nkapuscinska/VDIC/MTM_VDIC_nkapuscinska/lab08example/tb/top.sv

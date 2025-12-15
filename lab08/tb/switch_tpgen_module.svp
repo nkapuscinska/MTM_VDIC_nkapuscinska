@@ -1,0 +1,104 @@
+module switch_tpgen_module (switch_bfm bfm);
+    import fifomult_tb_pkg::*;
+
+
+    function uart_frame_t create_uart_frame(bit [7:0] data);
+        uart_frame_t frame;
+
+        frame.start_bit = 0;
+        frame.data_bits = data;
+        frame.parity_bit = ^data;
+        frame.stop_bit = 1;
+
+        return frame;
+    endfunction
+
+    function uart_packet_t create_functional_packet(bit [7:0] address);
+        uart_packet_t funct_packet;
+        bit [7:0] data;
+
+        data = byte'($urandom_range(0, 255));
+        
+
+        funct_packet.adres_frame = create_uart_frame(address);
+        funct_packet.data_frame  = create_uart_frame(data);
+        return funct_packet;
+    endfunction
+
+
+    function uart_packet_t create_programing_packet(bit [7:0] address);
+        uart_packet_t prog_packet;
+        bit [7:0] port;
+
+        port = byte'($urandom_range(0, 1));
+
+        prog_packet.adres_frame = create_uart_frame(address);
+        prog_packet.data_frame  = create_uart_frame(port);
+
+        return prog_packet;
+    endfunction
+
+
+    task automatic generate_config_packets();
+        uart_packet_t pkt;
+        bit [7:0] port;
+
+        for (int i = 0; i < 256; i++) begin
+            // generowanie portu losowego
+            port = byte'($urandom_range(0, 1));
+
+            // tworzenie pakietu programowania
+            pkt.adres_frame = create_uart_frame(i[7:0]);
+            pkt.data_frame  = create_uart_frame(port);
+
+            bfm.send_uart_frame(pkt, config_op);
+
+        end
+    endtask
+
+
+
+    task automatic send_config_packets();
+        $display("Starting to send config packets...");
+
+        bfm.prog = 1;
+        generate_config_packets();
+        bfm.prog = 0;
+
+        $display("Config packets done.");
+    endtask
+
+
+    task automatic generate_functional_packets();
+        uart_packet_t pkt;
+
+        for (int i = 0; i < 256; i++) begin
+            pkt = create_functional_packet(i[7:0]);
+            bfm.send_uart_frame(pkt, func_op);
+        end
+        
+    endtask
+
+
+    task automatic send_functional_packets();
+        $display("Switched to functional mode. Sending functional packets...");
+
+        generate_functional_packets();
+
+        $display("Functional packets done.");
+
+    endtask
+
+
+    initial begin
+        bfm.reset();
+        bfm.prog = 1;
+        send_config_packets();
+        bfm.prog = 0;
+        send_functional_packets();
+        #(CLKS_PER_BIT*12*256);
+        repeat (6*CLKS_PER_BIT) @(posedge bfm.clk);
+        #(CLKS_PER_BIT*10);
+        //$finish;
+    end
+endmodule : switch_tpgen_module
